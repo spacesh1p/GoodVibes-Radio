@@ -1,2 +1,2 @@
 # GoodVibes-Radio
-This is the client application for TCP-based radio. You can listen to other clients channels or create your own.
+This is the TCP-based network radio. The client application allows you to listen to other user channels or create your own.

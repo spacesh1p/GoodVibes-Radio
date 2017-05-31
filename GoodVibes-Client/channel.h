@@ -1,6 +1,7 @@
 #ifndef CHANNEL_H
 #define CHANNEL_H
 
+
 class QString;
 class QDataStream;
 class CheckingPasswdDialog;
