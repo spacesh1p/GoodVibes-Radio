@@ -28,7 +28,7 @@ signals:
     void disconnectedFromServer();
     void dataReady(QByteArray data);
 
-public slots:
+private slots:
     void slotConnectToServer();
     void slotDisconnectFromServer();
     void slotSetDescription(const QString& description);
@@ -36,7 +36,7 @@ public slots:
     void slotConnected();
     void slotDisconnected();
     void slotSendChannelData(const Channel& channel);
-    void slotSendFileData(const QString& path);
+    void slotSendFileData(const QString& songName, const QString& path);
     void slotSendRequest();
     void slotReadyRead();
 };

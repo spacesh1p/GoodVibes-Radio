@@ -7,6 +7,7 @@
 #include "mainwindow.h"
 #include "socketthread.h"
 #include "playerwidget.h"
+#include "checkingpasswddialog.h"
 
 ChooseChannelWidget::ChooseChannelWidget(QWidget *parent) :
     QWidget(parent),
@@ -24,8 +25,10 @@ ChooseChannelWidget::ChooseChannelWidget(QWidget *parent) :
 
     pPlayerWidget = nullptr;
 
+    pCheckingPasswdDialog = new CheckingPasswdDialog(this);
+
     pReaderThread = new SocketThread();
-    pReaderThread->setDescription(QString("<username:>,<purpose:readChannelsInfo>"));
+    pReaderThread->setDescription(QString("<user:name>,<purpose:readChannelsInfo>"));
     connect(this, SIGNAL(connectToServer()),
             pReaderThread, SLOT(slotConnectToServer()));
     connect(this, SIGNAL(disconnectFromServer()),
@@ -158,13 +161,16 @@ void ChooseChannelWidget::slotChooseClicked() {                                 
     if (pairChoosenHostChannel.first != nullptr && pairChoosenHostChannel.second != nullptr) {
         if (pMainWindow != nullptr)
             pMainWindow->setWidget(pairChoosenHostChannel.first);
-        (pairChoosenHostChannel.first)->unmute();               // it waits
+        (pairChoosenHostChannel.first)->unmute();
     }
     else if (pairChoosenGuestChannel.first != nullptr && pairChoosenGuestChannel.second != nullptr) {
         if (pPlayerWidget->isEnabled()) {
             bool access = true;
             if (pairChoosenGuestChannel.first->getPrivateStatus()) {
-                access = pairChoosenGuestChannel.first->checkPassword(this);
+                if (pCheckingPasswdDialog->exec()) {
+                    if (pCheckingPasswdDialog->getPasswdLine() != pairChoosenGuestChannel.first->getPassword())
+                        access = false;
+                }
             }
 
             if (access) {

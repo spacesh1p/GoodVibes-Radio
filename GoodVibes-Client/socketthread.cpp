@@ -11,8 +11,8 @@ SocketThread::SocketThread() {
             socket, SLOT(slotSetDescription(QString)));
     connect(this, SIGNAL(sendChannelData(Channel)),
             socket, SLOT(slotSendChannelData(Channel)));
-    connect(this, SIGNAL(sendFileData(QString)),
-            socket, SLOT(slotSendFileData(QString)));
+    connect(this, SIGNAL(sendFileData(QString, QString)),
+            socket, SLOT(slotSendFileData(QString, QString)));
     connect(this, SIGNAL(connectToServer()),
             socket, SLOT(slotConnectToServer()));
     connect(this, SIGNAL(disconnectFromServer()),
@@ -50,8 +50,8 @@ void SocketThread::slotSendChannelData(const Channel& channel) {
     emit sendChannelData(channel);
 }
 
-void SocketThread::slotSendFileData(const QString& path) {
-    emit sendFileData(path);
+void SocketThread::slotSendFileData(const QString& songName, const QString& path) {
+    emit sendFileData(songName, path);
 }
 
 bool SocketThread::isConnected(){

@@ -13,6 +13,7 @@ class MainWindow;
 class SocketThread;
 class PlayerWidget;
 class Channel;
+class CheckingPasswdDialog;
 
 
 class ChooseChannelWidget : public QWidget
@@ -35,6 +36,7 @@ private:
     QPair<Channel*, QCommandLinkButton*> pairChoosenGuestChannel;
     SocketThread* pReaderThread;
     PlayerWidget* pPlayerWidget;
+    CheckingPasswdDialog* pCheckingPasswdDialog;
 
     ChannelWidget* getHostChannel(const QString& channelName);
     Channel* getGuestChannel(const QString& channelName);

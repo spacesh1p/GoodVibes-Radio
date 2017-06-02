@@ -10,8 +10,8 @@ MediaHandler::MediaHandler(ChannelWidget* channelWidget)
 {
     pMediaPlayer = new QMediaPlayer;
     pMediaSender = pChannelWidget->getMediaSender();
-    connect(this, SIGNAL(readyToSendFile(QString)),
-            pMediaSender, SLOT(slotSendFileData(QString)));
+    connect(this, SIGNAL(readyToSendFile(QString, QString)),
+            pMediaSender, SLOT(slotSendFileData(QString, QString)));
     connect(pMediaPlayer, SIGNAL(mediaStatusChanged(QMediaPlayer::MediaStatus)),
             this, SLOT(slotMediaStatusChanged(QMediaPlayer::MediaStatus)));
     connect(this, SIGNAL(songAdded(int)),
@@ -73,7 +73,8 @@ void MediaHandler::setMuted(bool state) {
 
 void MediaHandler::slotSongAdded(int number) {
     if (number <= 3) {
-        emit readyToSendFile(filesQueue.dequeue());
+        QString path = filesQueue.dequeue();
+        emit readyToSendFile(getFileName(path), path);
         if (number == 1) {
             pMediaPlayer->setMedia(QUrl::fromLocalFile(playList.head().first));
             playList.head().second->setChecked(true);
@@ -109,8 +110,10 @@ void MediaHandler::slotMediaStatusChanged(QMediaPlayer::MediaStatus status) {
 
 void MediaHandler::slotSendNextSong(QMediaPlayer::MediaStatus status) {
     if (status == QMediaPlayer::MediaStatus::EndOfMedia)
-        if (!filesQueue.isEmpty())
-            emit readyToSendFile(filesQueue.dequeue());
+        if (!filesQueue.isEmpty()) {
+            QString path = filesQueue.dequeue();
+            emit readyToSendFile(getFileName(path), path);
+        }
 }
 
 void MediaHandler::slotMutedChanged(bool state) {
@@ -120,4 +123,14 @@ void MediaHandler::slotMutedChanged(bool state) {
 
 void MediaHandler::slotChangeVolume(int value) {
     pMediaPlayer->setVolume(value);
+}
+
+void MediaHandler::slotDisconnected() {
+    pMediaPlayer->stop();    // need to solve how to stop player
+    filesQueue.clear();
+    for (auto it = playList.begin(); it != playList.end(); ++it) {
+        pChannelWidget->removeSongButton(it->second);
+        delete it->second;
+    }
+    playList.clear();
 }

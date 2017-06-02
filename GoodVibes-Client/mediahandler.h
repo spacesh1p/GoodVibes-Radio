@@ -27,12 +27,11 @@ public:
     MediaHandler(ChannelWidget* channelWidget);
     ~MediaHandler();
     void addSong(const QString& path);
-    void sendToServer(const QString& fileName);
     void setMuted(bool state);
 
 signals:
     void songAdded(int number);
-    void readyToSendFile(QString path);
+    void readyToSendFile(const QString& songName, const QString& path);
 
 private slots:
     void slotSongAdded(int number);
@@ -40,6 +39,7 @@ private slots:
     void slotSendNextSong(QMediaPlayer::MediaStatus status);
     void slotMutedChanged(bool state);
     void slotChangeVolume(int value);
+    void slotDisconnected();
 
 };
 

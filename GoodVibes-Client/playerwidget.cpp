@@ -50,7 +50,7 @@ void PlayerWidget::setChannel(Channel* channel) {
     ui->channelName->setText(pChannel->getName());
     ui->textEdit->setText("");
     ui->volSlider->setValue(50);
-    pReaderThread->setDescription("<username:>,<purpose: readMedia>,<from: " + pChannel->getName() + ">");
+    pReaderThread->setDescription("<user:name>,<name:" + pChannel->getName() + ">,<purpose:readMedia>");
     buffer.open(QIODevice::ReadOnly);
     emit connectToServer();
 }
@@ -126,10 +126,9 @@ void PlayerWidget::slotDataReady(QByteArray data) {
         if (identifier[0] == "guests")
             ui->lcdNumOfGuests->display(identifier[1]);
         if (identifier[0] == "song") {
-            position = (descriptList[1].split(QRegExp("(<|>|:)"), QString::SkipEmptyParts))[1].toInt();
-            QString songName = (descriptList[2].split(QRegExp("(<|>|:)"), QString::SkipEmptyParts))[1];
+            QString songName = (descriptList[1].split(QRegExp("(<|>|:)"), QString::SkipEmptyParts))[1];
             QByteArray* arr = new QByteArray;
-            in >> (*arr);
+            in >> (*arr) >> position;
             songsQueue.enqueue(qMakePair(songName, arr));
             if (firstSong) {
                 firstSong = false;

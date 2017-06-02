@@ -92,8 +92,7 @@ void ChannelWidget::slotConnected() {
         ui->cmdBack->setText("&Back");
         ui->cmdBack->setEnabled(true);
     }
-    if (sender() == pTextSender)
-        emit sendChannelData(*pChannel);
+
     callCnt++;
     if (callCnt == 2)
         callCnt = 0;
@@ -140,8 +139,12 @@ void ChannelWidget::slotDataReady(QByteArray data) {
     if (!descriptList.isEmpty())
         identifier = descriptList[0].split(QRegExp("(<|>|:)"), QString::SkipEmptyParts);
     if (!identifier.isEmpty()) {
-        if (identifier[0] == "guests")
+        if (identifier[0] == "guests") {
             ui->lcdNumber->display(identifier[1]);
+        }
+        else if (identifier[0] == "request") {
+            emit sendChannelData(*pChannel);
+        }
     }
 }
 
@@ -163,9 +166,9 @@ void ChannelWidget::slotChannelCreated() {
     disconnect(pSettingsDialog, SIGNAL(accepted()),
             this, SLOT(slotChannelCreated()));
     pTextSender = new SocketThread();                                                                   // create TextSender
-    pTextSender->setDescription(QString("<name:" + pChannel->getName() + ">,<purpose:sendChannelInfo>"));
+    pTextSender->setDescription(QString("<host:name>,<purpose:sendChannelInfo>"));
     pMediaSender = new SocketThread();                                                                  // create MediaSender
-    pMediaSender->setDescription(QString("<name:" + pChannel->getName() + ">,<for:sendMedia>"));
+    pMediaSender->setDescription(QString("<host:name>,<purpose:sendMedia>"));
 
     connect(pTextSender, SIGNAL(connectedToServer()),
             this, SLOT(slotConnected()));
@@ -213,6 +216,8 @@ void ChannelWidget::slotChannelCreated() {
             pMediaHandler, SLOT(slotMutedChanged(bool)));
     connect(ui->sldVolume, SIGNAL(valueChanged(int)),
             pMediaHandler, SLOT(slotChangeVolume(int)));
+    connect(pMediaSender, SIGNAL(disconnectedFromServer()),
+            pMediaHandler, SLOT(slotDisconnected()));
 
     ui->channelName->setText(pChannel->getName());
     ui->lcdNumber->display(0);

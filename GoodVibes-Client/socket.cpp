@@ -73,7 +73,7 @@ void Socket::slotSendChannelData(const Channel& channel) {
     pSocket->flush();
 }
 
-void Socket::slotSendFileData(const QString& path) {
+void Socket::slotSendFileData(const QString& songName, const QString& path) {
     QFile pFile(path);
     if (!pFile.open(QFile::ReadOnly))                                              // open audio file
         {
@@ -83,7 +83,8 @@ void Socket::slotSendFileData(const QString& path) {
     QByteArray arrBlock;
     QDataStream out(&arrBlock, QIODevice::WriteOnly);
     out.setVersion(QDataStream::Qt_5_3);
-    out << quint64(0) << pFile.readAll();             // convert file data into bytes
+    QString strInfo = "<song>,<name:" + songName + ">";
+    out << quint64(0) << strInfo << pFile.readAll();             // convert file data into bytes
     out.device()->seek(0);
     out << quint64(arrBlock.size() - sizeof(quint64));
     pFile.close();
@@ -126,8 +127,7 @@ void Socket::slotReadyRead() {
         if(pSocket->bytesAvailable() < (qint64)nextBlockSize)
             break;
 
-        QByteArray data;
-        in >> data;
+        QByteArray data = pSocket->read(nextBlockSize);
 
         emit dataReady(data);
         nextBlockSize = 0;

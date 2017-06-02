@@ -29,7 +29,7 @@ signals:
     void connectedToServer();
     void disconnectedFromServer();
     void sendChannelData(const Channel& channel);
-    void sendFileData(const QString& path);
+    void sendFileData(const QString& songName, const QString& path);
     void connectToServer();
     void disconnectFromServer();
     void descriptionChanged(const QString& description);
@@ -43,7 +43,7 @@ private slots:
     void slotConnected();
     void slotDisconnected();
     void slotSendChannelData(const Channel& channel);
-    void slotSendFileData(const QString& path);
+    void slotSendFileData(const QString& songName, const QString& path);
     void slotFileNotOpened();
     void slotSendRequest();
 };
