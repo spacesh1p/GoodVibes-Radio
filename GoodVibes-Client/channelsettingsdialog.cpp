@@ -9,7 +9,7 @@ ChannelSettingsDialog::ChannelSettingsDialog(Channel* channel, QWidget *parent)
 {
     ui->setupUi(this);
 
-    ui->nameEdit->setText(pChannel->getName());
+    ui->nameEdit->setText(pChannel->getChannelName());
     ui->welcomeEdit->setText(pChannel->getWelcome());
     ui->numOfGuests->setValue(pChannel->getMaxGuestsNum());
     ui->descriptEdit->setText(pChannel->getDescription());

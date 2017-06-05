@@ -23,6 +23,8 @@ ChooseChannelWidget::ChooseChannelWidget(QWidget *parent) :
     else
         pMainWindow = nullptr;
 
+    userName = pMainWindow->getUserName();
+
     pPlayerWidget = nullptr;
 
     pCheckingPasswdDialog = new CheckingPasswdDialog(this);
@@ -33,8 +35,8 @@ ChooseChannelWidget::ChooseChannelWidget(QWidget *parent) :
             pReaderThread, SLOT(slotConnectToServer()));
     connect(this, SIGNAL(disconnectFromServer()),
             pReaderThread, SLOT(slotDisconnectFromServer()));
-    connect(this, SIGNAL(sendRequest()),
-            pReaderThread, SLOT(slotSendRequest()));
+    connect(this, SIGNAL(sendString(QString)),
+            pReaderThread, SLOT(slotSendString(QString)));
     connect(pReaderThread, SIGNAL(dataReady(QByteArray)),
             this, SLOT(slotDataReady(QByteArray)));
     connect(pReaderThread, SIGNAL(connectionError(QString)),
@@ -58,12 +60,12 @@ ChooseChannelWidget::~ChooseChannelWidget()
 }
 
 void ChooseChannelWidget::slotCreateChannel() {
-    ChannelWidget* pChannelWidget = new ChannelWidget(new Channel, this);               // create new channel widget
+    ChannelWidget* pChannelWidget = new ChannelWidget(new Channel(userName), this);     // create new channel widget
     if (pChannelWidget->openSettingsDialog()) {                                         // open setting dialog window
         hostChannelsList.append(pChannelWidget);                                        // append it to the list
         for (auto it = guestButtons.begin(); it != guestButtons.end(); it++)
             (*it)->setEnabled(false);
-        QCommandLinkButton* pChannelButton = new QCommandLinkButton((pChannelWidget->getChannel())->getName());
+        QCommandLinkButton* pChannelButton = new QCommandLinkButton((pChannelWidget->getChannel())->getChannelName());
         pChannelButton->setCheckable(true);
         pChannelButton->setAutoExclusive(true);
         pChannelButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -88,8 +90,8 @@ void ChooseChannelWidget::slotEditChannel() {
     Channel* pChannel = pChannelWidget->getChannel();
     if (pChannelWidget->openSettingsDialog()) {
         pChannelWidget->updateData();
-        (pairChoosenHostChannel.second)->setText(pChannel->getName());
-        ui->textEdit->setText(pChannel->getName() + "\n" +
+        (pairChoosenHostChannel.second)->setText(pChannel->getChannelName());
+        ui->textEdit->setText(pChannel->getChannelName() + "\n" +
                               "Maximum number of guest: " + QString::number(pChannel->getMaxGuestsNum()) + "\n" +
                               pChannel->getDescription());
     }
@@ -105,7 +107,7 @@ void ChooseChannelWidget::slotHostChannelClicked() {
         Channel* pChannel = pChannelWidget->getChannel();
         pairChoosenHostChannel = qMakePair(pChannelWidget, pButton);                        // write choosen channel
         pairChoosenGuestChannel = qMakePair(nullptr, nullptr);
-        ui->textEdit->setText(pChannel->getName() + "\n" +
+        ui->textEdit->setText(pChannel->getChannelName() + "\n" +
                               "Maximum number of guest: " + QString::number(pChannel->getMaxGuestsNum()) + "\n" +
                               pChannel->getDescription());
     }
@@ -127,7 +129,7 @@ void ChooseChannelWidget::slotGuestChannelClicked() {
         Channel* pChannel= getGuestChannel(pButton->text());
         pairChoosenGuestChannel = qMakePair(pChannel, pButton);                             // write choosen channel
         pairChoosenHostChannel = qMakePair(nullptr, nullptr);
-        ui->textEdit->setText(pChannel->getName() + "\n" +
+        ui->textEdit->setText(pChannel->getChannelName() + "\n" +
                               "Maximum number of guest: " + QString::number(pChannel->getMaxGuestsNum()) + "\n" +
                               pChannel->getDescription());
     }
@@ -142,7 +144,7 @@ void ChooseChannelWidget::slotGuestChannelClicked() {
 
 ChannelWidget* ChooseChannelWidget::getHostChannel(const QString& channelName) {        // find host channel widget by name
     for (auto it = hostChannelsList.begin(); it != hostChannelsList.end(); it++) {
-        if ((*it)->getChannel()->getName() == channelName)
+        if ((*it)->getChannel()->getChannelName() == channelName)
             return *it;
     }
     return nullptr;
@@ -150,7 +152,7 @@ ChannelWidget* ChooseChannelWidget::getHostChannel(const QString& channelName) {
 
 Channel* ChooseChannelWidget::getGuestChannel(const QString &channelName) {             // find guest channel by name
     for (auto it = guestChannelsList.begin(); it != guestChannelsList.end(); it++) {
-        if ((*it)->getName() == channelName)
+        if ((*it)->getChannelName() == channelName)
             return *it;
     }
     return nullptr;
@@ -244,7 +246,8 @@ void ChooseChannelWidget::slotDataReady(QByteArray data) {                  // h
     }
     for (auto it = channelList.begin(); it != channelList.end(); it++) {
         guestChannelsList.append(new Channel(*it));
-        QCommandLinkButton* pChannelButton = new QCommandLinkButton((*it).getName());
+        QCommandLinkButton* pChannelButton = new QCommandLinkButton((*it).getChannelName());
+        pChannelButton->setDescription((*it).getHostName());
         pChannelButton->setCheckable(true);
         pChannelButton->setAutoExclusive(true);
         pChannelButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -303,7 +306,7 @@ void ChooseChannelWidget::slotConnectionError(QString strError) {
 }
 
 void ChooseChannelWidget::backToChooseChannel() {                       // handle cmd back click
-    emit sendRequest();
+    emit sendString("<request>");
     if (pMainWindow != nullptr)
         pMainWindow->setWidget(this);
 }

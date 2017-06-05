@@ -9,25 +9,28 @@ class QWidget;
 class Channel
 {
 public:
-    Channel();
+    Channel(const QString& host = "host");
     Channel(const Channel& channel);
-    void setChannelName(const QString& name);
+    void setHostName(const QString& host);
+    void setChannelName(const QString& chName);
     void setChannelWelcome(const QString& welcome);
     void setChannelDesciption(const QString& descript);
     void setMaxGuestsNum(int num);
     void setPrivate(bool state);
     void setPassword(const QString& passwd);
+    QString getHostName() const;                                                  // get host name
     QString getWelcome() const;                                                   // get channel welcome
     QString getDescription() const;                                               // get channel description
     int getMaxGuestsNum() const;                                                  // get muximum number of guests
     bool getPrivateStatus() const;                                                // get isPrivate
     QString getPassword() const;                                                  // get channel password
-    QString getName() const;                                                      // get channel name
+    QString getChannelName() const;                                               // get channel name
 
     friend QDataStream &operator<<(QDataStream& out, const Channel& channel);       // over-loaded operators for serialization
     friend QDataStream &operator>>(QDataStream& in, Channel& channel);
 
 private:
+    QString hostName;
     QString channelName;
     QString channelWelcome;
     QString channelDescription;

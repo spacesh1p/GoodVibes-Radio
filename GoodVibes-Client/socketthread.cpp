@@ -17,8 +17,8 @@ SocketThread::SocketThread() {
             socket, SLOT(slotConnectToServer()));
     connect(this, SIGNAL(disconnectFromServer()),
             socket, SLOT(slotDisconnectFromServer()));
-    connect(this, SIGNAL(sendRequest()),
-            socket, SLOT(slotSendRequest()));
+    connect(this, SIGNAL(sendString(QString)),
+            socket, SLOT(slotSendString(QString)));
     connect(socket, SIGNAL(connectedToServer()),
             this, SLOT(slotConnected()));
     connect(socket, SIGNAL(disconnectedFromServer()),
@@ -29,6 +29,8 @@ SocketThread::SocketThread() {
             this, SLOT(slotFileNotOpened()));
     connect(socket, SIGNAL(dataReady(QByteArray)),
             this, SLOT(slotDataReady(QByteArray)));
+
+    connectStatus = false;
 
     socketThread.start();
 }
@@ -82,6 +84,6 @@ void SocketThread::slotDisconnectFromServer() {
 void SocketThread::slotFileNotOpened() {
     emit fileNotOpened();
 }
-void SocketThread::slotSendRequest() {
-    emit sendRequest();
+void SocketThread::slotSendString(const QString& msg) {
+    emit sendString(msg);
 }

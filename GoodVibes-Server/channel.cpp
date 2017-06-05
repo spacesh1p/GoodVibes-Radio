@@ -4,7 +4,8 @@
 
 int Channel::newChannelsCounter = 0;
 
-Channel::Channel()
+Channel::Channel(const QString& host)
+    : hostName(host)
 {
     // default settings
     channelName = "New channel";
@@ -17,6 +18,7 @@ Channel::Channel()
 }
 
 Channel::Channel(const Channel& channel) {
+    hostName = channel.hostName;
     channelName = channel.channelName;
     channelWelcome = channel.channelWelcome;
     channelDescription = channel.channelDescription;
@@ -25,6 +27,9 @@ Channel::Channel(const Channel& channel) {
     password = channel.password;
 }
 
+void Channel::setHostName(const QString &host) {
+    hostName = host;
+}
 
 void Channel::setChannelName(const QString& name) {
     channelName = name;
@@ -50,6 +55,10 @@ void Channel::setPassword(const QString& passwd) {
     password = passwd;
 }
 
+QString Channel::getHostName() const {
+    return hostName;
+}
+
 QString Channel::getWelcome() const {
     return channelWelcome;
 }
@@ -70,12 +79,13 @@ QString Channel::getPassword() const {
     return password;
 }
 
-QString Channel::getName() const {
+QString Channel::getChannelName() const {
     return channelName;
 }
 
 
 QDataStream& operator<<(QDataStream& out, const Channel& channel) {
+    out << channel.hostName;
     out << channel.channelName;
     out << channel.channelWelcome;
     out << channel.maxGuestsNum;
@@ -86,6 +96,7 @@ QDataStream& operator<<(QDataStream& out, const Channel& channel) {
 }
 
 QDataStream& operator>>(QDataStream& in, Channel& channel) {
+    in >> channel.hostName;
     in >> channel.channelName;
     in >> channel.channelWelcome;
     in >> channel.maxGuestsNum;

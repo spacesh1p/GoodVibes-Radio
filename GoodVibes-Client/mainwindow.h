@@ -9,6 +9,7 @@ class MainWindow;
 
 class ChooseChannelWidget;
 class QStackedWidget;
+class UserNameSettingWidget;
 
 class MainWindow : public QMainWindow
 {
@@ -17,15 +18,20 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-    //void authentication(QTcpSocket* pSocket);
     int addWidget(QWidget* widget);
     void setWidget(QWidget* widget);
     void removeWidget(QWidget* widget);
+    QString getUserName();
 
 private:
     Ui::MainWindow *ui;
     ChooseChannelWidget* pChannelsWidget;
+    UserNameSettingWidget* pUserNameSetting;
     QStackedWidget* pStackOfWidgets;
+    QString userName;
+
+private slots:
+    void slotUserNameAccepted(const QString& username);
 
 };
 

@@ -26,12 +26,14 @@ signals:
     void disconnectFromServer();
     void descriptorChanged(qintptr descriptor);
 
-private slots:
-    void slotDataReady(QByteArray data);
-    void slotDisconnectFromServer();
-    void slotDisconnected();
+public slots:
     void slotSendData(QByteArray data);
     void slotSendString(const QString& msg);
+    void slotDisconnectFromServer();
+
+private slots:
+    void slotDataReady(QByteArray data);
+    void slotDisconnected();
 
 };
 

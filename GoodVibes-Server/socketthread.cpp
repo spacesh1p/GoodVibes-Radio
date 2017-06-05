@@ -14,7 +14,7 @@ SocketThread::SocketThread(qintptr socketDescriptor, QObject *parent)
     connect(this, SIGNAL(sendData(QByteArray)),
             socket, SLOT(slotSendData(QByteArray)));
     connect(this, SIGNAL(sendString(QString)),
-            socket, SLOT(slotSendString(QString));
+            socket, SLOT(slotSendString(QString)));
     connect(this, SIGNAL(disconnectFromServer()),
             socket, SLOT(slotDisconnectFromServer()));
     connect(socket, SIGNAL(disconnectedFromServer()),
@@ -47,7 +47,6 @@ void SocketThread::slotSendString(const QString& msg) {
 }
 
 void SocketThread::slotDisconnected() {
-    connectStatus = false;
     emit disconnectedFromServer();
 }
 

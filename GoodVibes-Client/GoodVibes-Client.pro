@@ -33,7 +33,8 @@ SOURCES += main.cpp\
     mediahandler.cpp \
     checkingpasswddialog.cpp \
     socket.cpp \
-    socketthread.cpp
+    socketthread.cpp \
+    usernamesettingwidget.cpp
 
 HEADERS  += \
     channelwidget.h \
@@ -46,7 +47,8 @@ HEADERS  += \
     mediahandler.h \
     checkingpasswddialog.h \
     socket.h \
-    socketthread.h
+    socketthread.h \
+    usernamesettingwidget.h
 
 FORMS += \
     channelwidget.ui \
@@ -54,4 +56,5 @@ FORMS += \
     choosechannelwidget.ui \
     channelsettingsdialog.ui \
     playerwidget.ui \
-    checkingpasswddialog.ui
+    checkingpasswddialog.ui \
+    usernamesettingwidget.ui

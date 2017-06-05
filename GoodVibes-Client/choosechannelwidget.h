@@ -37,6 +37,7 @@ private:
     SocketThread* pReaderThread;
     PlayerWidget* pPlayerWidget;
     CheckingPasswdDialog* pCheckingPasswdDialog;
+    QString userName;
 
     ChannelWidget* getHostChannel(const QString& channelName);
     Channel* getGuestChannel(const QString& channelName);
@@ -44,7 +45,7 @@ private:
 signals:
     void connectToServer();
     void disconnectFromServer();
-    void sendRequest();
+    void sendString(const QString& msg);
 
 private slots:
     void slotCreateChannel();

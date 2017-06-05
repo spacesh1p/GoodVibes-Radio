@@ -33,7 +33,7 @@ signals:
     void connectToServer();
     void disconnectFromServer();
     void descriptionChanged(const QString& description);
-    void sendRequest();
+    void sendString(const QString& msg);
 
 private slots:
     void slotDataReady(QByteArray data);
@@ -45,7 +45,7 @@ private slots:
     void slotSendChannelData(const Channel& channel);
     void slotSendFileData(const QString& songName, const QString& path);
     void slotFileNotOpened();
-    void slotSendRequest();
+    void slotSendString(const QString& msg);
 };
 
 #endif // SOCKETTHREAD_H

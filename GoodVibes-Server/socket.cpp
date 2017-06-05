@@ -14,6 +14,7 @@ Socket::Socket(qintptr socketDescriptor, QObject *parent)
             this, SLOT(slotReadyRead()));
 
     pSocket->setSocketDescriptor(socketDescriptor);
+    nextBlockSize = 0;
 }
 
 Socket::~Socket() {
@@ -31,7 +32,7 @@ void Socket::slotDisconnected() {
 }
 
 void Socket::slotSendData(QByteArray data) {
-    pSocket->write(arrBlock);
+    pSocket->write(data);
     pSocket->flush();
 }
 
@@ -51,6 +52,7 @@ void Socket::slotDisconnectFromServer() {
 }
 
 void Socket::slotReadyRead() {
+    qDebug() << "data ready";
     QDataStream in(pSocket);
     in.setVersion(QDataStream::Qt_5_3);
 

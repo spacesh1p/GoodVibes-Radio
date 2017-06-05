@@ -166,9 +166,9 @@ void ChannelWidget::slotChannelCreated() {
     disconnect(pSettingsDialog, SIGNAL(accepted()),
             this, SLOT(slotChannelCreated()));
     pTextSender = new SocketThread();                                                                   // create TextSender
-    pTextSender->setDescription(QString("<host:name>,<purpose:sendChannelInfo>"));
+    pTextSender->setDescription(QString("<host:name>,<name:" + pChannel->getChannelName() + ">,<purpose:sendChannelInfo>"));
     pMediaSender = new SocketThread();                                                                  // create MediaSender
-    pMediaSender->setDescription(QString("<host:name>,<purpose:sendMedia>"));
+    pMediaSender->setDescription(QString("<host:name>,<name:" + pChannel->getChannelName() + ">,<purpose:sendMedia>"));
 
     connect(pTextSender, SIGNAL(connectedToServer()),
             this, SLOT(slotConnected()));
@@ -201,7 +201,7 @@ void ChannelWidget::slotChannelCreated() {
 
     emit connectToServer();
 
-    pMediaHandler = new MediaHandler(this);                                                             // create MediaHandler object
+    pMediaHandler = new MediaHandler(this);                                 // create MediaHandler object
 
 
     ui->cmdAddSong->setEnabled(false);
@@ -219,7 +219,7 @@ void ChannelWidget::slotChannelCreated() {
     connect(pMediaSender, SIGNAL(disconnectedFromServer()),
             pMediaHandler, SLOT(slotDisconnected()));
 
-    ui->channelName->setText(pChannel->getName());
+    ui->channelName->setText(pChannel->getChannelName());
     ui->lcdNumber->display(0);
 }
 
@@ -227,62 +227,3 @@ void ChannelWidget::updateData() {
     emit sendChannelData(*pChannel);
 }
 
-//void ChannelWidget::slotRestart() {
-//    if (pTextSocket->state() != QTcpSocket::ConnectedState)
-//        pTextSocket->connectToHost(ServerInfo::strHost, ServerInfo::nPort);
-//    if (pMediaSocket->state() != QTcpSocket::ConnectedState)
-//        pMediaSocket->connectToHost(ServerInfo::strHost, ServerInfo::nPort);
-//}
-
-//void ChannelWidget::slotReadClient() {
-//    QTcpSocket* pClientSocket = (QTcpSocket*)sender();
-//    QDataStream in(pClientSocket);
-//    in.setVersion(QDataStream::Qt_5_3);
-//    while(true) {
-//        if (!nextBlockSize) {
-//            if (pClientSocket->bytesAvailable() < sizeof(quint16))
-//                break;
-//            in >> nextBlockSize;
-//        }
-
-//        if (pClientSocket->bytesAvailable() < nextBlockSize)
-//            break;
-
-//        QString msg;
-//        in >> msg;
-//        if (msg == "next") {
-//            if (pSongQueue->isEmpty()) {                                                // if there is no songs
-//                sendToClient(pClientSocket, "The channel ran out of music :(");
-//                break;
-//            }
-//            QFile* pFile(pSongQueue->dequeue());
-//            sendToClient(pClientSocket, pFile);                                         // send audio file
-//        }
-
-//        if (msg == "done") {
-//            sendToClient(pClientSocket, "time/" + /*current playing time*/);            // send playing time
-//        }
-//    }
-//}
-//void ChannelWidget::slotNewConnection() {
-//    QTcpSocket* pClientSocket = pServer->nextPendingConnection();          // get new connection socket
-//    connect(pClientSocket, SIGNAL(disconnected()),                         // handle disconnection
-//            this, SLOT(slotDisconnetion()));
-
-//    connect(pClientSocket, SIGNAL(readyRead()),                            // handle reading the socket
-//            this, SLOT(slotReadClient()));
-
-//    clientsSockets.push_back(pClientSocket);                               // add new socket to the list
-//    ui->textView->append("New listener connected.");
-//    ui->lcdNumber->display(clientsSockets.size());
-
-//    sendToClient(pClientSocket, "Welcome to " + channelWelcome + "!");
-//}
-
-//void ChannelWidget::slotDisconnetion() {
-//    QTcpSocket* pSender = (QTcpSocket*)sender();
-//    clientsSockets.removeOne(pSender);                                     // delete the disconnected socket
-//    ui->textView->append("Listener disconnected.");
-//    ui->lcdNumber->display(clientsSockets.size());
-//    pSender->deleteLater();
-//}

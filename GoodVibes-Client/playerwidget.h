@@ -34,7 +34,7 @@ private:
     QQueue<QPair<QString, QByteArray*>> songsQueue;
     bool firstSong;
     QBuffer buffer;
-    quint64 position;
+    QQueue<quint64> positionQueue;
 
     void setNextSong();
 

@@ -7,9 +7,6 @@
 Socket::Socket(QObject *parent) : QObject(parent)
 {
     pSocket = new QTcpSocket(this);
-    if (!socketDescription.isEmpty())
-        pSocket->connectToHost(ServerInfo::strHost, ServerInfo::nPort);
-
     connect(pSocket, SIGNAL(connected()),
             this, SLOT(slotConnected()));
     connect(pSocket, SIGNAL(error(QAbstractSocket::SocketError)),
@@ -17,12 +14,45 @@ Socket::Socket(QObject *parent) : QObject(parent)
     connect(pSocket, SIGNAL(disconnected()),
             this, SLOT(slotDisconnected()));
     connect(pSocket, SIGNAL(readyRead()),
-            this, SLOT(slotReadyRead()));
+            this, SLOT(slotAvailableToWrite()));
+    nextBlockSize = 0;
+    if (!socketDescription.isEmpty())
+        pSocket->connectToHost(ServerInfo::strHost, ServerInfo::nPort);
 }
 
 Socket::~Socket() {
     pSocket->disconnectFromHost();
     delete pSocket;
+}
+
+void Socket::slotAvailableToWrite() {
+    QDataStream in(pSocket);
+    in.setVersion(QDataStream::Qt_5_3);
+
+    while (true) {
+        if (!nextBlockSize) {
+            if (pSocket->bytesAvailable() < (qint64)sizeof(qint64))
+                break;
+            in >> nextBlockSize;
+        }
+
+        if(pSocket->bytesAvailable() < (qint64)nextBlockSize)
+            break;
+
+        QString status;
+        in >> status;
+
+        if (status == "OK") {
+            qDebug() << "OK";
+            disconnect(pSocket, SIGNAL(readyRead()),
+                    this, SLOT(slotAvailableToWrite()));
+            connect(pSocket, SIGNAL(readyRead()),
+                    this, SLOT(slotReadyRead()));
+            sendDescription();
+        }
+
+        nextBlockSize = 0;
+    }
 }
 
 void Socket::slotSetDescription(const QString& description) {
@@ -37,6 +67,7 @@ void Socket::sendDescription() {
     out.device()->seek(0);
     out << quint64(arrBlock.size() - sizeof(quint64));
     pSocket->write(arrBlock);
+    qDebug() << "description sended";
     pSocket->flush();
 
 }
@@ -54,7 +85,6 @@ void Socket::slotError(QAbstractSocket::SocketError err) {
 }
 
 void Socket::slotConnected() {
-    sendDescription();
     emit connectedToServer();
 }
 
@@ -93,12 +123,11 @@ void Socket::slotSendFileData(const QString& songName, const QString& path) {
 
 }
 
-void Socket::slotSendRequest() {
+void Socket::slotSendString(const QString& msg) {
     QByteArray arrBlock;
     QDataStream out(&arrBlock, QIODevice::WriteOnly);
     out.setVersion(QDataStream::Qt_5_3);
-    QString request = "<request>";
-    out << quint64(0) << request;                                                  // convert String into bytes
+    out << quint64(0) << msg;                                                  // convert String into bytes
     out.device()->seek(0);
     out << quint64(arrBlock.size() - sizeof(quint64));
     pSocket->write(arrBlock);
@@ -114,6 +143,7 @@ void Socket::slotDisconnectFromServer() {
 }
 
 void Socket::slotReadyRead() {
+    qDebug() << "readyRead";
     QDataStream in(pSocket);
     in.setVersion(QDataStream::Qt_5_3);
 

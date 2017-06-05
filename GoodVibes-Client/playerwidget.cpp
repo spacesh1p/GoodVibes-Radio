@@ -47,10 +47,10 @@ void PlayerWidget::setChannel(Channel* channel) {
     connect(pReaderThread, SIGNAL(disconnectedFromServer()),
             this, SLOT(slotRestart()));
     pChannel = channel;
-    ui->channelName->setText(pChannel->getName());
+    ui->channelName->setText(pChannel->getChannelName());
     ui->textEdit->setText("");
     ui->volSlider->setValue(50);
-    pReaderThread->setDescription("<user:name>,<name:" + pChannel->getName() + ">,<purpose:readMedia>");
+    pReaderThread->setDescription("<user:name>,<host:" + pChannel->getHostName() + ">,<name:" + pChannel->getChannelName() + ">,<purpose:readMedia>");
     buffer.open(QIODevice::ReadOnly);
     emit connectToServer();
 }
@@ -77,8 +77,7 @@ void PlayerWidget::slotMediaStatusChanged(QMediaPlayer::MediaStatus status) {
 
 void PlayerWidget::slotSetPosition(bool seekable) {
     if (seekable) {
-        pMediaPlayer->setPosition(position);
-        position = 0;
+        pMediaPlayer->setPosition(positionQueue.dequeue());
         disconnect(pMediaPlayer, SIGNAL(seekableChanged(bool)),
                    this, SLOT(slotSetPosition(bool)));
     }
@@ -118,7 +117,7 @@ void PlayerWidget::slotDataReady(QByteArray data) {
     QDataStream in(&data, QIODevice::ReadOnly);
     in.setVersion(QDataStream::Qt_5_3);
     in >> description;
-    QStringList descriptList = description.split(",");
+    QStringList descriptList = description.split(",", QString::SkipEmptyParts);
     QStringList identifier;
     if (!descriptList.isEmpty())
         identifier = descriptList[0].split(QRegExp("(<|>|:)"), QString::SkipEmptyParts);
@@ -128,12 +127,14 @@ void PlayerWidget::slotDataReady(QByteArray data) {
         if (identifier[0] == "song") {
             QString songName = (descriptList[1].split(QRegExp("(<|>|:)"), QString::SkipEmptyParts))[1];
             QByteArray* arr = new QByteArray;
-            in >> (*arr) >> position;
+            QString posStr;
+            in >> (*arr) >> posStr;
+            QString pos = (posStr.split(QRegExp("(<|>|:)"), QString::SkipEmptyParts))[1];
+            quint64 position = (quint64)pos.toInt();
             songsQueue.enqueue(qMakePair(songName, arr));
+            positionQueue.enqueue(position);
             if (firstSong) {
                 firstSong = false;
-                connect(pMediaPlayer, SIGNAL(seekableChanged(bool)),
-                        this, SLOT(slotSetPosition(bool)));
                 setNextSong();
             }
         }
@@ -146,6 +147,8 @@ void PlayerWidget::setNextSong() {
         ui->songNameLine->setText(songPair.first);
         buffer.setBuffer(songPair.second);
         pMediaPlayer->setMedia(QMediaContent(), &buffer);
+        connect(pMediaPlayer, SIGNAL(seekableChanged(bool)),
+                this, SLOT(slotSetPosition(bool)));
     }
 }
 

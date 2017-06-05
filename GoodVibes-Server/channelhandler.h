@@ -4,9 +4,9 @@
 #include <QObject>
 #include <QMap>
 #include <QQueue>
+#include "channel.h"
 
 class SocketThread;
-class Channel;
 class QTime;
 class Server;
 
@@ -17,10 +17,8 @@ class ChannelHandler : public QObject
 private:
     Server* pServer;
     Channel channel;
-    QString hostName;
     SocketThread* pHostTextSender;
     SocketThread* pHostMediaSender;
-    QMap<QString, SocketThread*> usersTextSocets;
     QMap<QString, SocketThread*> usersMediaSockets;
     QQueue<QByteArray> songsQueue;
     QQueue<QTime> arravingTime;
@@ -31,17 +29,17 @@ private:
     void sendChannelsList(SocketThread* sender);
 
 public:
-    ChannelHandler(const QString& host, QObject *parent = 0);
+    ChannelHandler(QObject *parent = 0);
     ~ChannelHandler();
-    void setHostTextSocket(qintptr socketDescriptor);
-    void setHostMediaSocket(qintptr socketDescriptor);
-    void addTextSocket(const QString& userName, quintptr socketDescriptor);
-    void addMediaSocket(const QString& userName, quintptr socketDescriptor);
-    QString getHostName();
+    void setHostTextSocket(SocketThread* socketThread);
+    void setHostMediaSocket(SocketThread* socketThread);
+    void addMediaSocket(const QString& userName, SocketThread* socketThread);
+    Channel getChannel();
 
 signals:
+    void sendData(QByteArray data);
+    void sendString(const QString& msg);
     void channelClosed();
-    void channelSeted(const QString& channelName);
     void sendNumOfGuests(const QString& strNum);
     void sendNextSong(QByteArray data);
 
@@ -49,7 +47,6 @@ public slots:
     void slotDisconected();
     void slotTextDataReady(QByteArray data);
     void slotMediaDataReady(QByteArray data);
-    void slotRequestReady(QByteArray data);
     void slotUserDisconnected();
 };
 

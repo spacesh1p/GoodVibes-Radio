@@ -55,10 +55,16 @@
         <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
           <layout class="QGridLayout" name="channelsLayout">
-           <item row="6" column="0">
-            <widget class="Line" name="hostLine">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
+           <item row="4" column="0">
+            <widget class="QLabel" name="label">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Host</string>
              </property>
             </widget>
            </item>
@@ -75,26 +81,6 @@
              </property>
             </spacer>
            </item>
-           <item row="5" column="0">
-            <widget class="QPushButton" name="cmdCreateChannel">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="text">
-              <string>&amp;Create channel</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="Line" name="guestLine">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-            </widget>
-           </item>
            <item row="0" column="0">
             <widget class="QLabel" name="label_2">
              <property name="sizePolicy">
@@ -108,8 +94,22 @@
              </property>
             </widget>
            </item>
-           <item row="4" column="0">
-            <widget class="QLabel" name="label">
+           <item row="6" column="0">
+            <widget class="Line" name="hostLine">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="Line" name="guestLine">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0">
+            <widget class="QPushButton" name="cmdCreateChannel">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                <horstretch>0</horstretch>
@@ -117,7 +117,7 @@
               </sizepolicy>
              </property>
              <property name="text">
-              <string>Host</string>
+              <string>&amp;Create channel</string>
              </property>
             </widget>
            </item>
