@@ -6,6 +6,7 @@
 Socket::Socket(qintptr socketDescriptor, QObject *parent)
     : QObject(parent)
 {
+    qDebug() << socketDescriptor;
     pSocket = new QTcpSocket(this);
 
     connect(pSocket, SIGNAL(disconnected()),

@@ -8,12 +8,12 @@ class ChannelHandler;
 class Channel;
 class SocketThread;
 
-class Server : public QObject
+class Server : public QTcpServer
 {
     Q_OBJECT
 
 private:
-    QTcpServer* pServer;
+//    QTcpServer* pServer;
     QMap<QString, QMap<QString, ChannelHandler*>> channelsMap;
     QMap<QString, SocketThread*> usersTextSocets;
 
@@ -25,8 +25,11 @@ public:
     QList<Channel> getChannelsList(const QString& hostName);   // return list of channels whose host's name is not equal to hostName
     void start();
 
+protected:
+    void incomingConnection(qintptr socketDescriptor);
+
 private slots:
-    void slotNewConnection();
+//    void slotNewConnection();
     void slotReadDescription(QByteArray data);
     void slotChannelClosed();
     void slotRequestReady(QByteArray data);

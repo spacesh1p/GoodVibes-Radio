@@ -7,38 +7,58 @@
 #include "channel.h"
 
 Server::Server(int nPort, QObject *parent)
-    : QObject(parent)
+    : QTcpServer(parent)
 {
-    pServer = new QTcpServer(this);
-    connect(pServer, SIGNAL(newConnection()),
-            this, SLOT(slotNewConnection()));
-    if (!pServer->listen(QHostAddress::Any, nPort)) {
-        qDebug() << ("Unable to start the server:" + pServer->errorString());
-        pServer->close();
-        return;
-    }
-    else
-        qDebug() << "Server is launched.";
+    if (!this->listen(QHostAddress::Any, nPort)) {
+            qDebug() << "Unable to start the server:" + this->errorString();
+            this->close();
+            return;
+        }
 }
 
-Server::~Server() {
-    pServer->close();
-    delete pServer;
-}
-
-void Server::start() {
-    while (true);
-}
-
-void Server::slotNewConnection() {
+void Server::incomingConnection(qintptr socketDescriptor) {
     qDebug() << "new connection";
-    SocketThread* pSocketThread = new SocketThread(pServer->nextPendingConnection()->socketDescriptor());
+    SocketThread* pSocketThread = new SocketThread(socketDescriptor);
     connect(pSocketThread, SIGNAL(dataReady(QByteArray)),
             this, SLOT(slotReadDescription(QByteArray)));
     connect(pSocketThread, SIGNAL(disconnectedFromServer()),
             pSocketThread, SLOT(deleteLater()));
     pSocketThread->slotSendString("OK");
 }
+
+//Server::Server(int nPort, QObject *parent)
+//    : QObject(parent)
+//{
+//    pServer = new QTcpServer(this);
+//    connect(pServer, SIGNAL(newConnection()),
+//            this, SLOT(slotNewConnection()));
+//    if (!pServer->listen(QHostAddress::Any, nPort)) {
+//        qDebug() << ("Unable to start the server:" + pServer->errorString());
+//        pServer->close();
+//        return;
+//    }
+//    else
+//        qDebug() << "Server is launched.";
+//}
+
+Server::~Server() {
+//    pServer->close();
+//    delete pServer;
+}
+
+void Server::start() {
+    while (true);
+}
+
+//void Server::slotNewConnection() {
+//    qDebug() << "new connection";
+//    SocketThread* pSocketThread = new SocketThread(pServer->in);
+//    connect(pSocketThread, SIGNAL(dataReady(QByteArray)),
+//            this, SLOT(slotReadDescription(QByteArray)));
+//    connect(pSocketThread, SIGNAL(disconnectedFromServer()),
+//            pSocketThread, SLOT(deleteLater()));
+//    pSocketThread->slotSendString("OK");
+//}
 
 void Server::slotReadDescription(QByteArray data) {
     qDebug() << "read description";
@@ -121,7 +141,7 @@ void Server::slotReadUserName(QByteArray data) {
     out.setVersion(QDataStream::Qt_5_3);
     out << quint64(0) << accepted;
     out.device()->seek(0);
-    out << quint64(data.size() - sizeof(quint64));
+    out << quint64(newData.size() - sizeof(quint64));
     pClient->slotSendData(newData);
 }
 
@@ -152,7 +172,7 @@ void Server::slotRequestReady(QByteArray data) {
         out.setVersion(QDataStream::Qt_5_3);
         out << quint64(0) << channelsList;
         out.device()->seek(0);
-        out << quint64(data.size() - sizeof(quint64));
+        out << quint64(newData.size() - sizeof(quint64));
         pClient->slotSendData(newData);
     }
 }
