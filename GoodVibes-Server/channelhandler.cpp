@@ -21,11 +21,11 @@ ChannelHandler::ChannelHandler(QObject *parent)
 
 ChannelHandler::~ChannelHandler() {
     if (pHostTextSender != nullptr)
-        delete pHostTextSender;
+        pHostTextSender->deleteLater();
     if (pHostMediaSender != nullptr)
-        delete pHostMediaSender;
+        pHostMediaSender->deleteLater();
     for (auto it = usersMediaSockets.begin(); it != usersMediaSockets.end(); it++)
-        delete it.value();
+        it.value()->deleteLater();
 }
 
 void ChannelHandler::setHostTextSocket(SocketThread* socketThread) {
@@ -68,9 +68,11 @@ Channel ChannelHandler::getChannel() {
 }
 
 void ChannelHandler::slotTextDataReady(QByteArray data) {
+    QString oldName = channel.getChannelName();
     QDataStream in(&data, QIODevice::ReadOnly);
     in.setVersion(QDataStream::Qt_5_3);
     in >> channel;
+    emit channelInfoChanged(oldName, channel.getChannelName());
 }
 
 void ChannelHandler::slotMediaDataReady(QByteArray data) {
@@ -100,7 +102,7 @@ void ChannelHandler::slotUserDisconnected() {
     for (auto it = usersMediaSockets.begin(); it != usersMediaSockets.end(); it++)
         if (it.value() == sender())
             userName = it.key();
-    delete usersMediaSockets[userName];
+    usersMediaSockets[userName]->deleteLater();
     usersMediaSockets.remove(userName);
     emit sendNumOfGuests("<guests:" + QString::number(usersMediaSockets.size()) + ">");
 }

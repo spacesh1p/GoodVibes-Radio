@@ -26,7 +26,7 @@ ChannelWidget::ChannelWidget(Channel* channel, QWidget *parent)
         userName = pChooseChannelWidget->getUserName();
 
     pSettingsDialog = new ChannelSettingsDialog(pChannel, this);        // create setting dialog object
-    connect(pSettingsDialog, SIGNAL(accepted()),
+    connect(pSettingsDialog, SIGNAL(settingsSeted()),
             this, SLOT(slotChannelCreated()));
 
     pMediaHandler = nullptr;
@@ -39,12 +39,14 @@ ChannelWidget::~ChannelWidget()
 {
     delete ui;
     delete pSettingsDialog;
+    if (pChannel != nullptr)
+        delete pChannel;
     if (pMediaHandler != nullptr)
         delete pMediaHandler;
     if (pTextSender != nullptr)
-        delete pTextSender;
+        pTextSender->deleteLater();
     if (pMediaSender != nullptr)
-        delete pMediaSender;
+        pMediaSender->deleteLater();
 }
 
 int ChannelWidget::openSettingsDialog() {
@@ -146,7 +148,7 @@ void ChannelWidget::slotDataReady(QByteArray data) {
             ui->lcdNumber->display(identifier[1]);
         }
         else if (identifier[0] == "request") {
-            emit sendChannelData(*pChannel);
+            slotUpdateData();
         }
     }
 }
@@ -166,8 +168,10 @@ void ChannelWidget::slotFileNotOpened() {
 }
 
 void ChannelWidget::slotChannelCreated() {
-    disconnect(pSettingsDialog, SIGNAL(accepted()),
+    disconnect(pSettingsDialog, SIGNAL(settingsSeted()),
             this, SLOT(slotChannelCreated()));
+    connect(pSettingsDialog, SIGNAL(settingsSeted()),
+            this, SLOT(slotUpdateData()));
     pTextSender = new SocketThread();                                                                   // create TextSender
     pTextSender->setDescription(QString("<host:" + userName + ">,<name:" + pChannel->getChannelName() + ">,<purpose:sendChannelInfo>"));
     pMediaSender = new SocketThread();                                                                  // create MediaSender
@@ -226,7 +230,7 @@ void ChannelWidget::slotChannelCreated() {
     ui->lcdNumber->display(0);
 }
 
-void ChannelWidget::updateData() {
+void ChannelWidget::slotUpdateData() {
     emit sendChannelData(*pChannel);
 }
 

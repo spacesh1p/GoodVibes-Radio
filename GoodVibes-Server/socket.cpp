@@ -20,7 +20,7 @@ Socket::Socket(qintptr socketDescriptor, QObject *parent)
 
 Socket::~Socket() {
     pSocket->close();
-    delete pSocket;
+    pSocket->deleteLater();
 }
 
 void Socket::slotSetDescriptor(qintptr descriptor) {

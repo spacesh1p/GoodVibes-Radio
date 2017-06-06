@@ -52,4 +52,5 @@ void ChannelSettingsDialog::slotAccepted() {
         pChannel->setPassword(ui->passwordEdit->text());
     else
         pChannel->setPassword("");
+    emit settingsSeted();
 }

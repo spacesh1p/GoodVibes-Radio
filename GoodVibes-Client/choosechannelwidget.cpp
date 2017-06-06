@@ -51,11 +51,13 @@ ChooseChannelWidget::ChooseChannelWidget(QWidget *parent) :
             this, SLOT(slotChooseClicked()));
     connect(ui->cmdCreateChannel, SIGNAL(clicked()),                // handle Create channel press
             this, SLOT(slotCreateChannel()));
+    connect(ui->cmdRefresh, SIGNAL(clicked()),
+            this, SLOT(slotRefreshChannels()));
 }
 
 ChooseChannelWidget::~ChooseChannelWidget()
 {
-    delete pReaderThread;
+    pReaderThread->deleteLater();
     delete ui;
 }
 
@@ -85,7 +87,7 @@ void ChooseChannelWidget::slotCreateChannel() {
         pMainWindow->addWidget(pChannelWidget);
     }
     else {
-        delete pChannelWidget;
+        pChannelWidget->deleteLater();
     }
 }
 
@@ -93,7 +95,6 @@ void ChooseChannelWidget::slotEditChannel() {
     ChannelWidget* pChannelWidget = pairChoosenHostChannel.first;
     Channel* pChannel = pChannelWidget->getChannel();
     if (pChannelWidget->openSettingsDialog()) {
-        pChannelWidget->updateData();
         (pairChoosenHostChannel.second)->setText(pChannel->getChannelName());
         ui->textEdit->setText(pChannel->getChannelName() + "\n" +
                               "Maximum number of guest: " + QString::number(pChannel->getMaxGuestsNum()) + "\n" +
@@ -210,8 +211,7 @@ void ChooseChannelWidget::slotTurnOffChannel() {                                
     if (ui->cmdEdit->text() == "&Edit")
         ui->cmdEdit->setEnabled(false);
     ui->cmdChoose->setEnabled(false);
-    delete (pairChoosenHostChannel.first)->getChannel();
-    delete pairChoosenHostChannel.first;
+    pairChoosenHostChannel.first->deleteLater();
     delete pairChoosenHostChannel.second;
     pairChoosenHostChannel = qMakePair(nullptr, nullptr);
 }
@@ -246,7 +246,7 @@ void ChooseChannelWidget::slotDataReady(QByteArray data) {                  // h
     else if (pPlayerWidget != nullptr) {
         if (pMainWindow != nullptr)
             pMainWindow->removeWidget(pPlayerWidget);
-        delete pPlayerWidget;
+        pPlayerWidget->deleteLater();
         pPlayerWidget = nullptr;
     }
     for (auto it = channelList.begin(); it != channelList.end(); it++) {
@@ -272,6 +272,7 @@ void ChooseChannelWidget::slotReconnect() {
 }
 
 void ChooseChannelWidget::slotConnected() {
+    emit sendString("<request>");
     disconnect(ui->cmdEdit, SIGNAL(clicked()),
             this, SLOT(slotReconnect()));
     connect(ui->cmdEdit, SIGNAL(clicked()),
@@ -282,6 +283,7 @@ void ChooseChannelWidget::slotConnected() {
         ui->cmdEdit->setEnabled(false);
     ui->textEdit->setText("Good Vibes Radio\n" + QDateTime::currentDateTime().toString("ddd, d MMMM HH:mm"));
     ui->cmdCreateChannel->setEnabled(true);
+    ui->cmdRefresh->setEnabled(true);
     for (auto it = guestButtons.begin(); it != guestButtons.end(); it++)
         (*it)->setEnabled(true);
     for (auto it = hostButtons.begin(); it != hostButtons.end(); it++)
@@ -300,6 +302,7 @@ void ChooseChannelWidget::slotDisconnected() {
 void ChooseChannelWidget::slotConnectionError(QString strError) {
     emit disconnectFromServer();
     ui->cmdCreateChannel->setEnabled(false);
+    ui->cmdRefresh->setEnabled(false);
     ui->textEdit->setText(strError);
     for (auto it = guestButtons.begin(); it != guestButtons.end(); it++)
         (*it)->setEnabled(false);
@@ -314,5 +317,9 @@ void ChooseChannelWidget::backToChooseChannel() {                       // handl
     emit sendString("<request>");
     if (pMainWindow != nullptr)
         pMainWindow->setWidget(this);
+}
+
+void ChooseChannelWidget::slotRefreshChannels() {
+    emit sendString("<request>");
 }
 

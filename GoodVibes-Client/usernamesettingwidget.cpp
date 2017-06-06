@@ -30,7 +30,7 @@ UserNameSettingWidget::UserNameSettingWidget(QWidget *parent) :
 UserNameSettingWidget::~UserNameSettingWidget()
 {
     delete ui;
-    delete pSender;
+    pSender->deleteLater();
 }
 
 void UserNameSettingWidget::slotConnected() {

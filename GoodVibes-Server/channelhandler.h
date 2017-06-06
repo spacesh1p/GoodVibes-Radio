@@ -42,6 +42,7 @@ signals:
     void channelClosed();
     void sendNumOfGuests(const QString& strNum);
     void sendNextSong(QByteArray data);
+    void channelInfoChanged(const QString& oldName, const QString& newName);
 
 public slots:
     void slotDisconected();

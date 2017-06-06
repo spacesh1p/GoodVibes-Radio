@@ -35,6 +35,7 @@ private slots:
     void slotRequestReady(QByteArray data);
     void slotDisconnected();
     void slotReadUserName(QByteArray data);
+    void slotChannelInfoChanged(const QString& oldName, const QString& newName);
 
 };
 

@@ -22,6 +22,9 @@ private:
     Ui::ChannelSettingsDialog *ui;
     Channel* pChannel;
 
+signals:
+    void settingsSeted();
+
 private slots:
     void slotStateChanged();
     void slotAccepted();

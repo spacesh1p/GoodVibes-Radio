@@ -30,7 +30,6 @@ public:
     void unmute();
     SocketThread* getMediaSender();
     int getSliderVlaue();
-    void updateData();
 
 private:
     Ui::ChannelWidget *ui;
@@ -58,6 +57,7 @@ private slots:
     void slotRestart();
     void slotFileNotOpened();
     void slotDataReady(QByteArray data);
+    void slotUpdateData();
 };
 
 

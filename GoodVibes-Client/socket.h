@@ -39,7 +39,6 @@ private slots:
     void slotSendFileData(const QString& songName, const QString& path);
     void slotReadyRead();
     void slotSendString(const QString& msg);
-    void slotAvailableToWrite();
 };
 
 #endif // SOCKET_H

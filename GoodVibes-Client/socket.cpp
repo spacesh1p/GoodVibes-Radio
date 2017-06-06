@@ -14,7 +14,7 @@ Socket::Socket(QObject *parent) : QObject(parent)
     connect(pSocket, SIGNAL(disconnected()),
             this, SLOT(slotDisconnected()));
     connect(pSocket, SIGNAL(readyRead()),
-            this, SLOT(slotAvailableToWrite()));
+            this, SLOT(slotReadyRead()));
     nextBlockSize = 0;
     if (!socketDescription.isEmpty())
         pSocket->connectToHost(ServerInfo::strHost, ServerInfo::nPort);
@@ -22,37 +22,7 @@ Socket::Socket(QObject *parent) : QObject(parent)
 
 Socket::~Socket() {
     pSocket->disconnectFromHost();
-    delete pSocket;
-}
-
-void Socket::slotAvailableToWrite() {
-    QDataStream in(pSocket);
-    in.setVersion(QDataStream::Qt_5_3);
-
-    while (true) {
-        if (!nextBlockSize) {
-            if (pSocket->bytesAvailable() < (qint64)sizeof(qint64))
-                break;
-            in >> nextBlockSize;
-        }
-
-        if(pSocket->bytesAvailable() < (qint64)nextBlockSize)
-            break;
-
-        QString status;
-        in >> status;
-
-        if (status == "OK") {
-            qDebug() << "OK";
-            disconnect(pSocket, SIGNAL(readyRead()),
-                    this, SLOT(slotAvailableToWrite()));
-            connect(pSocket, SIGNAL(readyRead()),
-                    this, SLOT(slotReadyRead()));
-            sendDescription();
-        }
-
-        nextBlockSize = 0;
-    }
+    pSocket->deleteLater();
 }
 
 void Socket::slotSetDescription(const QString& description) {
@@ -69,6 +39,7 @@ void Socket::sendDescription() {
     pSocket->write(arrBlock);
     qDebug() << "description sended";
     pSocket->flush();
+    emit connectedToServer();
 
 }
 
@@ -85,7 +56,7 @@ void Socket::slotError(QAbstractSocket::SocketError err) {
 }
 
 void Socket::slotConnected() {
-    emit connectedToServer();
+    sendDescription();
 }
 
 void Socket::slotDisconnected() {

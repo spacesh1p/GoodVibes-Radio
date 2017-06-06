@@ -23,7 +23,6 @@ void Server::incomingConnection(qintptr socketDescriptor) {
             this, SLOT(slotReadDescription(QByteArray)));
     connect(pSocketThread, SIGNAL(disconnectedFromServer()),
             pSocketThread, SLOT(deleteLater()));
-    pSocketThread->slotSendString("OK");
 }
 
 //Server::Server(int nPort, QObject *parent)
@@ -83,6 +82,8 @@ void Server::slotReadDescription(QByteArray data) {
                 pChHandler = new ChannelHandler(this);
                 connect(pChHandler, SIGNAL(channelClosed()),
                         this, SLOT(slotChannelClosed()));
+                connect(pChHandler, SIGNAL(channelInfoChanged(QString,QString)),
+                        this, SLOT(slotChannelInfoChanged(QString,QString)));
                 (channelsMap[identifier[1]])[chName] = pChHandler;
             }
             else
@@ -123,7 +124,7 @@ void Server::slotReadDescription(QByteArray data) {
                     this, SLOT(slotReadUserName(QByteArray)));
         }
         else {
-            delete pClient;
+            pClient->deleteLater();
         }
     }
 }
@@ -183,7 +184,14 @@ void Server::slotDisconnected() {
     SocketThread* pClient = (SocketThread*)sender();
     QString userStr = findSocketUser(pClient);
     usersTextSocets.remove(userStr);
-    delete pClient;
+    pClient->deleteLater();
+}
+
+void Server::slotChannelInfoChanged(const QString& oldName, const QString& newName) {
+    QString hostName = ((ChannelHandler*)sender())->getChannel().getHostName();
+    ChannelHandler* pChHandler = (channelsMap[hostName])[oldName];
+    channelsMap[hostName].remove(oldName);
+    (channelsMap[hostName])[newName] = pChHandler;
 }
 
 void Server::slotChannelClosed() {
@@ -193,5 +201,5 @@ void Server::slotChannelClosed() {
     channelsMap[hostStr].remove(chNameStr);
     if (channelsMap[hostStr].isEmpty())
         channelsMap.remove(hostStr);
-    delete pChHandler;
+    pChHandler->deleteLater();
 }

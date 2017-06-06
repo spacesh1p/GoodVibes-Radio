@@ -60,6 +60,7 @@ private slots:
     void slotConnected();
     void slotDisconnected();
     void slotReconnect();
+    void slotRefreshChannels();
 };
 
 #endif // CHOOSECHANNELWIDGET_H

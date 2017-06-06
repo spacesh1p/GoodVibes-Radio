@@ -60,7 +60,7 @@ void PlayerWidget::setChannel(Channel* channel) {
 
 PlayerWidget::~PlayerWidget()
 {
-    delete pReaderThread;
+    pReaderThread->deleteLater();
     delete pMediaPlayer;
     delete ui;
 }
