@@ -31,32 +31,28 @@ bool MediaHandler::contains(const QString& path) {
 
 QString MediaHandler::getFileName(const QString& path) {
     QString songName;
-    if (!contains(path)) {
-        bool write = false;
-        for (int i = path.length() - 2; i != 0; i--) {              // method of getting song name
-            if (path[i] == '.') {
-                write = true;
-                continue;
-            }
-            if (path[i] == '/')
-                break;
-            if (write)
-                songName.push_back(path[i]);
+    bool write = false;
+    for (int i = path.length() - 2; i != 0; i--) {              // method of getting song name
+        if (path[i] == '.') {
+            write = true;
+            continue;
         }
-        for (int i = 0; i < songName.length() / 2; i++) {
-            QChar c = songName[i];
-            songName[i] = songName[songName.length() - 1 - i];
-            songName[songName.length() - 1 - i] = c;
-        }
+        if (path[i] == '/')
+            break;
+        if (write)
+            songName.push_back(path[i]);
     }
-    else
-        songName = "";
+    for (int i = 0; i < songName.length() / 2; i++) {
+        QChar c = songName[i];
+        songName[i] = songName[songName.length() - 1 - i];
+        songName[songName.length() - 1 - i] = c;
+    }
     return songName;
 }
 
 void MediaHandler::addSong(const QString& path) {
-    QString songName = getFileName(path);
-    if (songName != "") {
+    if (!contains(path)) {
+        QString songName = getFileName(path);
         QCommandLinkButton* pButton = new QCommandLinkButton(songName);             // create buttons for songs
         pButton->setCheckable(true);
         pButton->setAutoExclusive(true);

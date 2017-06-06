@@ -76,18 +76,26 @@ void ChannelHandler::slotTextDataReady(QByteArray data) {
 }
 
 void ChannelHandler::slotMediaDataReady(QByteArray data) {
-    if (!songsQueue.isEmpty()) {
+    if (songsQueue.size() == 3) {
         songsQueue.dequeue();
         arravingTime.dequeue();
     }
     QTime time = QTime::currentTime();
     arravingTime.enqueue(time);
-    QByteArray arr(data);
+    QByteArray arr;
+    QDataStream out1(&arr, QIODevice::WriteOnly);
+    out1.setVersion(QDataStream::Qt_5_3);
+    out1 << quint64(0);
+    arr.append(data);
+    songsQueue.enqueue(arr);
     QByteArray addition;
-    QDataStream out(&addition, QIODevice::WriteOnly);
+    QDataStream out2(&addition, QIODevice::WriteOnly);
+    out2.setVersion(QDataStream::Qt_5_3);
     QString posStr = "<pos:" + QString::number(time.msecsTo(QTime::currentTime())) + ">";
-    out << posStr;
+    out2 << posStr;
     arr.append(addition);
+    out1.device()->seek(0);
+    out1 << quint64(arr.size() - sizeof(quint64));
     emit sendNextSong(arr);
 }
 
@@ -111,11 +119,16 @@ void ChannelHandler::sendSongs(SocketThread *sender) {
     for (int i = 0; i < songsQueue.size(); i++) {
         QByteArray arr(songsQueue[i]);
         QByteArray addition;
-        QDataStream out(&addition, QIODevice::WriteOnly);
+        QDataStream out1(&addition, QIODevice::WriteOnly);
+        out1.setVersion(QDataStream::Qt_5_3);
         QTime time = arravingTime[i];
         QString posStr = "<pos:" + QString::number(time.msecsTo(QTime::currentTime())) + ">";
-        out << posStr;
+        out1 << posStr;
         arr.append(addition);
+        QDataStream out2(&arr, QIODevice::WriteOnly);
+        out1.setVersion(QDataStream::Qt_5_3);
+        out2.device()->seek(0);
+        out2 << quint64(arr.size() - sizeof(quint64));
         emit sendData(arr);
     }
     disconnect(this, SIGNAL(sendData(QByteArray)),
