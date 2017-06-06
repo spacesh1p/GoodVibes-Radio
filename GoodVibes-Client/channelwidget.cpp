@@ -22,6 +22,9 @@ ChannelWidget::ChannelWidget(Channel* channel, QWidget *parent)
     else
         pChooseChannelWidget = nullptr;
 
+    if (pChooseChannelWidget != nullptr)
+        userName = pChooseChannelWidget->getUserName();
+
     pSettingsDialog = new ChannelSettingsDialog(pChannel, this);        // create setting dialog object
     connect(pSettingsDialog, SIGNAL(accepted()),
             this, SLOT(slotChannelCreated()));
@@ -166,9 +169,9 @@ void ChannelWidget::slotChannelCreated() {
     disconnect(pSettingsDialog, SIGNAL(accepted()),
             this, SLOT(slotChannelCreated()));
     pTextSender = new SocketThread();                                                                   // create TextSender
-    pTextSender->setDescription(QString("<host:name>,<name:" + pChannel->getChannelName() + ">,<purpose:sendChannelInfo>"));
+    pTextSender->setDescription(QString("<host:" + userName + ">,<name:" + pChannel->getChannelName() + ">,<purpose:sendChannelInfo>"));
     pMediaSender = new SocketThread();                                                                  // create MediaSender
-    pMediaSender->setDescription(QString("<host:name>,<name:" + pChannel->getChannelName() + ">,<purpose:sendMedia>"));
+    pMediaSender->setDescription(QString("<host:" + userName + ">,<name:" + pChannel->getChannelName() + ">,<purpose:sendMedia>"));
 
     connect(pTextSender, SIGNAL(connectedToServer()),
             this, SLOT(slotConnected()));

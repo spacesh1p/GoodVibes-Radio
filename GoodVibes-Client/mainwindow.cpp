@@ -48,7 +48,7 @@ QString MainWindow::getUserName() {
 void MainWindow::slotUserNameAccepted(const QString &username) {
     userName = username;
     pStackOfWidgets->removeWidget(pUserNameSetting);
-    delete pUserNameSetting;
+    pUserNameSetting->deleteLater();
     pUserNameSetting = nullptr;
     pChannelsWidget = new ChooseChannelWidget(this);
 }

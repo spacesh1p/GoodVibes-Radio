@@ -30,7 +30,7 @@ ChooseChannelWidget::ChooseChannelWidget(QWidget *parent) :
     pCheckingPasswdDialog = new CheckingPasswdDialog(this);
 
     pReaderThread = new SocketThread();
-    pReaderThread->setDescription(QString("<user:name>,<purpose:readChannelsInfo>"));
+    pReaderThread->setDescription(QString("<user:" + userName + ">,<purpose:readChannelsInfo>"));
     connect(this, SIGNAL(connectToServer()),
             pReaderThread, SLOT(slotConnectToServer()));
     connect(this, SIGNAL(disconnectFromServer()),
@@ -57,6 +57,10 @@ ChooseChannelWidget::~ChooseChannelWidget()
 {
     delete pReaderThread;
     delete ui;
+}
+
+QString ChooseChannelWidget::getUserName() {
+    return userName;
 }
 
 void ChooseChannelWidget::slotCreateChannel() {
@@ -213,6 +217,7 @@ void ChooseChannelWidget::slotTurnOffChannel() {                                
 }
 
 void ChooseChannelWidget::slotDataReady(QByteArray data) {                  // handle recieving the data from server
+    qDebug() << "read channls info";
     if (pairChoosenGuestChannel.second != nullptr) {
         pairChoosenGuestChannel = qMakePair(nullptr, nullptr);
         if (ui->textEdit->toPlainText().contains("Maximum number of guest: "))

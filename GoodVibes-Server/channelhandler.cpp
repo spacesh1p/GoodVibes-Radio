@@ -68,7 +68,7 @@ Channel ChannelHandler::getChannel() {
 }
 
 void ChannelHandler::slotTextDataReady(QByteArray data) {
-    QDataStream in(&data, QIODevice::WriteOnly);
+    QDataStream in(&data, QIODevice::ReadOnly);
     in.setVersion(QDataStream::Qt_5_3);
     in >> channel;
 }

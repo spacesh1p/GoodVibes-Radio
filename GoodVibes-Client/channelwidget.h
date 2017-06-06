@@ -34,6 +34,7 @@ public:
 
 private:
     Ui::ChannelWidget *ui;
+    QString userName;
     Channel* pChannel;
     MediaHandler* pMediaHandler;
     ChooseChannelWidget* pChooseChannelWidget;

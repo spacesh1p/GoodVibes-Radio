@@ -23,6 +23,7 @@ class ChooseChannelWidget : public QWidget
 public:
     explicit ChooseChannelWidget(QWidget *parent = 0);
     ~ChooseChannelWidget();
+    QString getUserName();
     void backToChooseChannel();
 
 private:

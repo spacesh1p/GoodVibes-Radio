@@ -17,6 +17,9 @@ PlayerWidget::PlayerWidget(QWidget *parent) :
     else
         pChooseChannelWidget = nullptr;
 
+    if (pChooseChannelWidget != nullptr)
+        userName = pChooseChannelWidget->getUserName();
+
     pMediaPlayer = new QMediaPlayer(this);
     connect(pMediaPlayer, SIGNAL(mediaStatusChanged(QMediaPlayer::MediaStatus)),
             this, SLOT(slotMediaStatusChanged(QMediaPlayer::MediaStatus)));
@@ -50,7 +53,7 @@ void PlayerWidget::setChannel(Channel* channel) {
     ui->channelName->setText(pChannel->getChannelName());
     ui->textEdit->setText("");
     ui->volSlider->setValue(50);
-    pReaderThread->setDescription("<user:name>,<host:" + pChannel->getHostName() + ">,<name:" + pChannel->getChannelName() + ">,<purpose:readMedia>");
+    pReaderThread->setDescription("<user:" + userName + ">,<host:" + pChannel->getHostName() + ">,<name:" + pChannel->getChannelName() + ">,<purpose:readMedia>");
     buffer.open(QIODevice::ReadOnly);
     emit connectToServer();
 }

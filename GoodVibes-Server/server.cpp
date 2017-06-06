@@ -158,9 +158,11 @@ void Server::slotRequestReady(QByteArray data) {
     in.setVersion(QDataStream::Qt_5_3);
     QString recievedStr;
     in >> recievedStr;
+    qDebug() << recievedStr;
     if (recievedStr == "<request>") {
         QList<Channel> channelsList;
         QString userStr = findSocketUser(pClient);
+        qDebug() << channelsMap;
         for (auto it = channelsMap.begin(); it != channelsMap.end(); it++) {
             if (it.key() != userStr) {
                 for (auto itr = (*it).begin(); itr != (*it).end(); itr++)

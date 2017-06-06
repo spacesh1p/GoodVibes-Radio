@@ -26,6 +26,7 @@ public:
 
 private:
     Ui::PlayerWidget *ui;
+    QString userName;
     Channel* pChannel;
     ChooseChannelWidget* pChooseChannelWidget;
     SocketThread* pReaderThread;
