@@ -38,7 +38,6 @@ PlayerWidget::PlayerWidget(QWidget *parent) :
             this, SLOT(slotDisconnected()));
     connect(this, SIGNAL(connectToServer()),
             pReaderThread, SLOT(slotConnectToServer()));
-    emit connectToServer();
 
     ui->volSlider->setValue(50);
     connect(ui->cmdBack, SIGNAL(clicked()),

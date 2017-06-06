@@ -217,7 +217,7 @@ void ChooseChannelWidget::slotTurnOffChannel() {                                
 }
 
 void ChooseChannelWidget::slotDataReady(QByteArray data) {                  // handle recieving the data from server
-    qDebug() << "read channls info";
+    qDebug() << "read channels info";
     if (pairChoosenGuestChannel.second != nullptr) {
         pairChoosenGuestChannel = qMakePair(nullptr, nullptr);
         if (ui->textEdit->toPlainText().contains("Maximum number of guest: "))
@@ -229,17 +229,19 @@ void ChooseChannelWidget::slotDataReady(QByteArray data) {                  // h
     if (!guestButtons.isEmpty()) {
         for (auto it = guestButtons.begin(); it != guestButtons.end(); it++) {
             ui->channelsLayout->removeWidget(*it);
-            QCommandLinkButton* pButton = *it;
-            guestButtons.removeAll(*it);
-            delete pButton;
+            delete *it;
         }
+        guestButtons.clear();
+        int row, col, rs, cs;
+        ui->channelsLayout->getItemPosition((ui->channelsLayout)->indexOf(ui->cmdRefresh), &row, &col, &rs, &cs);
+        ui->channelsLayout->addWidget(ui->guestLine, row + 1, col, rs, cs);
     }
     QList<Channel> channelList;
     QDataStream in(&data, QIODevice::ReadOnly);
     in.setVersion(QDataStream::Qt_5_3);
     in >> channelList;
     if (!channelList.isEmpty()) {
-        pPlayerWidget = new PlayerWidget;
+        pPlayerWidget = new PlayerWidget(this);
         if (pMainWindow != nullptr)
             pMainWindow->addWidget(pPlayerWidget);
     }

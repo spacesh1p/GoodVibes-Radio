@@ -88,6 +88,7 @@ void Server::slotReadDescription(QByteArray data) {
             }
             else
                 pChHandler = (channelsMap[identifier[1]])[chName];
+            qDebug() << "in readDescription\n>>" << channelsMap;
             QString purposeStr = (descriptList[2].split(QRegExp("(<|>|:)"), QString::SkipEmptyParts))[1];
             if (purposeStr == "sendChannelInfo")
                 pChHandler->setHostTextSocket(pClient);
@@ -188,8 +189,8 @@ void Server::slotDisconnected() {
 }
 
 void Server::slotChannelInfoChanged(const QString& oldName, const QString& newName) {
-    QString hostName = ((ChannelHandler*)sender())->getChannel().getHostName();
-    ChannelHandler* pChHandler = (channelsMap[hostName])[oldName];
+    ChannelHandler* pChHandler = (ChannelHandler*)sender();
+    QString hostName = pChHandler->getChannel().getHostName();
     channelsMap[hostName].remove(oldName);
     (channelsMap[hostName])[newName] = pChHandler;
 }
