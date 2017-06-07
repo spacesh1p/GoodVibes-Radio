@@ -39,6 +39,8 @@ PlayerWidget::PlayerWidget(QWidget *parent) :
             this, SLOT(slotDisconnected()));
     connect(this, SIGNAL(connectToServer()),
             pReaderThread, SLOT(slotConnectToServer()));
+    connect(this, SIGNAL(disconnectFromServer()),
+            pReaderThread, SLOT(slotDisconnectFromServer()));
 
     ui->volSlider->setValue(50);
     connect(ui->cmdBack, SIGNAL(clicked()),
@@ -100,6 +102,7 @@ void PlayerWidget::slotConnected() {
 }
 
 void PlayerWidget::slotDisconnected() {
+    qDebug() << "really disconnected.";
     enabled = true;
 }
 
@@ -136,7 +139,8 @@ void PlayerWidget::slotDataReady(QByteArray data) {
             QByteArray* arr = new QByteArray;
             QString timeStr;
             in >> (*arr) >> timeStr;
-            QString pos = (posStr.split(QRegExp("(<|>|:)"), QString::SkipEmptyParts))[1];
+            qDebug() << "### " << timeStr;
+            QString pos = (timeStr.split(QRegExp("(<|>|:)"), QString::SkipEmptyParts))[1];
             quint64 position;
             if (pos == "0")
                 position = quint64(0);
@@ -169,6 +173,7 @@ void PlayerWidget::setNextSong() {
 void PlayerWidget::slotBackClicked() {
     pMediaPlayer->stop();
     songsQueue.clear();
+    positionQueue.clear();
     buffer.close();
     disconnect(pReaderThread, SIGNAL(disconnectedFromServer()),
                this, SLOT(slotRestart()));
@@ -180,11 +185,13 @@ void PlayerWidget::slotBackClicked() {
 void PlayerWidget::slotDisconnectFromChannel() {
     pMediaPlayer->stop();
     songsQueue.clear();
+    positionQueue.clear();
     buffer.close();
     disconnect(pReaderThread, SIGNAL(disconnectedFromServer()),
                this, SLOT(slotRestart()));
     connect(pReaderThread, SIGNAL(disconnectedFromServer()),
             this, SLOT(slotDisconnected()));
     emit disconnectFromServer();
+    qDebug() << "try to disconnect";
     pChooseChannelWidget->backToChooseChannel();
 }

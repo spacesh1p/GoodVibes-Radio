@@ -95,6 +95,8 @@ void MediaHandler::slotMediaStatusChanged(QMediaPlayer::MediaStatus status) {
     }
 
     if (status == QMediaPlayer::MediaStatus::EndOfMedia) {
+        qDebug() << "sendEndOfMedia";
+        emit sendString("<endOfMedia>");
         pChannelWidget->removeSongButton(playList.head().second);
         delete playList.head().second;
         playList.dequeue();

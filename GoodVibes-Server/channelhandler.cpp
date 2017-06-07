@@ -81,11 +81,13 @@ void ChannelHandler::slotMediaDataReady(QByteArray data) {
     in >> description;
     QStringList identifier = (description.split(QRegExp("(<|>|:)"), QString::SkipEmptyParts));
     if (identifier[0] == "startMedia") {
-        if (!songsQueue.isEmpty()) {
-            songsQueue.dequeue();
-            startTime.dequeue();
-        }
         startTime.first() = identifier[1];
+    }
+
+    else if (identifier[0] == "endOfMedia") {
+        qDebug() << "endOfMedia";
+        songsQueue.dequeue();
+        startTime.dequeue();
     }
 
     else if (identifier[0] == "song") {
@@ -119,6 +121,7 @@ void ChannelHandler::slotDisconected() {
 }
 
 void ChannelHandler::slotUserDisconnected() {
+    qDebug() << "userDisconnected";
     QString userName;
     for (auto it = usersMediaSockets.begin(); it != usersMediaSockets.end(); it++)
         if (it.value() == sender())

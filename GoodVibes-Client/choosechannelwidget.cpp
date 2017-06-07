@@ -57,6 +57,9 @@ ChooseChannelWidget::ChooseChannelWidget(QWidget *parent) :
 
 ChooseChannelWidget::~ChooseChannelWidget()
 {
+    if (pPlayerWidget != nullptr) {
+        pPlayerWidget->deleteLater();
+    }
     pReaderThread->deleteLater();
     delete ui;
 }
@@ -241,15 +244,11 @@ void ChooseChannelWidget::slotDataReady(QByteArray data) {                  // h
     in.setVersion(QDataStream::Qt_5_3);
     in >> channelList;
     if (!channelList.isEmpty()) {
-        pPlayerWidget = new PlayerWidget(this);
-        if (pMainWindow != nullptr)
-            pMainWindow->addWidget(pPlayerWidget);
-    }
-    else if (pPlayerWidget != nullptr) {
-        if (pMainWindow != nullptr)
-            pMainWindow->removeWidget(pPlayerWidget);
-        pPlayerWidget->deleteLater();
-        pPlayerWidget = nullptr;
+        if (pPlayerWidget == nullptr) {
+            pPlayerWidget = new PlayerWidget(this);
+            if (pMainWindow != nullptr)
+                pMainWindow->addWidget(pPlayerWidget);
+        }
     }
     for (auto it = channelList.begin(); it != channelList.end(); it++) {
         guestChannelsList.append(new Channel(*it));
