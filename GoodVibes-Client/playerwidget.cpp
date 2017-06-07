@@ -1,5 +1,6 @@
 #include <QTcpSocket>
 #include <QStringList>
+#include <QTime>
 #include "playerwidget.h"
 #include "ui_playerwidget.h"
 #include "channel.h"
@@ -133,11 +134,14 @@ void PlayerWidget::slotDataReady(QByteArray data) {
         if (identifier[0] == "song") {
             QString songName = (descriptList[1].split(QRegExp("(<|>|:)"), QString::SkipEmptyParts))[1];
             QByteArray* arr = new QByteArray;
-            QString posStr;
-            in >> (*arr) >> posStr;
-            qDebug() << "songsize: " << arr->size();
+            QString timeStr;
+            in >> (*arr) >> timeStr;
             QString pos = (posStr.split(QRegExp("(<|>|:)"), QString::SkipEmptyParts))[1];
-            quint64 position = (quint64)pos.toInt();
+            quint64 position;
+            if (pos == "0")
+                position = quint64(0);
+            else
+                position = quint64(QTime::fromString(pos, "hh.mm.ss.zzz").msecsTo(QTime::currentTime()));
             songsQueue.enqueue(qMakePair(songName, arr));
             positionQueue.enqueue(position);
             if (firstSong) {

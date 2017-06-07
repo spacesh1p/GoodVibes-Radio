@@ -21,7 +21,7 @@ private:
     SocketThread* pHostMediaSender;
     QMap<QString, SocketThread*> usersMediaSockets;
     QQueue<QByteArray> songsQueue;
-    QQueue<QTime> arravingTime;
+    QQueue<QString> startTime;
     int songCounter;
     bool disconnected;
 

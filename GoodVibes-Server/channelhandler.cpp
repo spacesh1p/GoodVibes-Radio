@@ -79,27 +79,32 @@ void ChannelHandler::slotMediaDataReady(QByteArray data) {
     QString description;
     QDataStream in(&data, QIODevice::ReadOnly);
     in >> description;
-    qDebug() << description;
-    QString identifier = (description.split(QRegExp("(<|>|:)"), QString::SkipEmptyParts))[0];
-    if (identifier == "endOfMedia") {
-        songsQueue.dequeue();
-        arravingTime.dequeue();
-        arravingTime.first() = QTime::currentTime();
+    QStringList identifier = (description.split(QRegExp("(<|>|:)"), QString::SkipEmptyParts));
+    if (identifier[0] == "startMedia") {
+        if (!songsQueue.isEmpty()) {
+            songsQueue.dequeue();
+            startTime.dequeue();
+        }
+        startTime.first() = identifier[1];
     }
 
-    else if (identifier == "song") {
+    else if (identifier[0] == "song") {
         QByteArray arr;
         QDataStream out1(&arr, QIODevice::WriteOnly);
         out1.setVersion(QDataStream::Qt_5_3);
         out1 << quint64(0);
         arr.append(data);
         songsQueue.enqueue(arr);
-        arravingTime.enqueue(QTime());
+        startTime.enqueue(QString());
         QByteArray addition;
         QDataStream out2(&addition, QIODevice::WriteOnly);
         out2.setVersion(QDataStream::Qt_5_3);
-        QString posStr = "<pos:" + QString::number(0) + ">";
-        out2 << posStr;
+        QString timeStr;
+        if (startTime.last().isNull())
+            timeStr = "<startMedia:0>";
+        else
+            timeStr = "<startMedia:" + startTime.last() + ">";
+        out2 << timeStr;
         arr.append(addition);
         out1.device()->seek(0);
         out1 << quint64(arr.size() - sizeof(quint64));
@@ -129,13 +134,12 @@ void ChannelHandler::sendSongs(SocketThread *sender) {
         QByteArray addition;
         QDataStream out1(&addition, QIODevice::WriteOnly);
         out1.setVersion(QDataStream::Qt_5_3);
-        QString posStr;
-        QTime time = arravingTime[i];
-        if (!time.isNull())
-            posStr = "<pos:" + QString::number(time.msecsTo(QTime::currentTime())) + ">";
+        QString timeStr;
+        if (startTime[i].isNull())
+            timeStr = "<startMedia:0>";
         else
-            posStr = "<pos:" + QString::number(0) + ">";
-        out1 << posStr;
+            timeStr = "<startMedia:" + startTime[i] + ">";
+        out1 << timeStr;
         arr.append(addition);
         QDataStream out2(&arr, QIODevice::WriteOnly);
         out1.setVersion(QDataStream::Qt_5_3);

@@ -1,6 +1,7 @@
 #include <QStringList>
 #include <QtAlgorithms>
 #include <QCommandLinkButton>
+#include <QTime>
 #include "mediahandler.h"
 #include "socketthread.h"
 #include "channelwidget.h"
@@ -89,12 +90,11 @@ void MediaHandler::slotSongAdded(int number) {
 void MediaHandler::slotMediaStatusChanged(QMediaPlayer::MediaStatus status) {
     if (status == QMediaPlayer::MediaStatus::LoadedMedia) {
         pMediaPlayer->play();
+        emit sendString("<startMedia:" + QTime::currentTime().toString("hh.mm.ss.zzz") + ">");
         pMediaPlayer->setVolume(pChannelWidget->getSliderVlaue());
     }
 
     if (status == QMediaPlayer::MediaStatus::EndOfMedia) {
-        qDebug() << "sendEndOfMedia";
-        emit sendString("<endOfMedia>");
         pChannelWidget->removeSongButton(playList.head().second);
         delete playList.head().second;
         playList.dequeue();
