@@ -12,6 +12,8 @@ MediaHandler::MediaHandler(ChannelWidget* channelWidget)
     pMediaSender = pChannelWidget->getMediaSender();
     connect(this, SIGNAL(readyToSendFile(QString, QString)),
             pMediaSender, SLOT(slotSendFileData(QString, QString)));
+    connect(this, SIGNAL(sendString(QString)),
+            pMediaSender, SLOT(slotSendString(QString)));
     connect(pMediaPlayer, SIGNAL(mediaStatusChanged(QMediaPlayer::MediaStatus)),
             this, SLOT(slotMediaStatusChanged(QMediaPlayer::MediaStatus)));
     connect(this, SIGNAL(songAdded(int)),
@@ -91,6 +93,8 @@ void MediaHandler::slotMediaStatusChanged(QMediaPlayer::MediaStatus status) {
     }
 
     if (status == QMediaPlayer::MediaStatus::EndOfMedia) {
+        qDebug() << "sendEndOfMedia";
+        emit sendString("<endOfMedia>");
         pChannelWidget->removeSongButton(playList.head().second);
         delete playList.head().second;
         playList.dequeue();

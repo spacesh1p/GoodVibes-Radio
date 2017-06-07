@@ -32,6 +32,7 @@ public:
 signals:
     void songAdded(int number);
     void readyToSendFile(const QString& songName, const QString& path);
+    void sendString(const QString& msg);
 
 private slots:
     void slotSongAdded(int number);
