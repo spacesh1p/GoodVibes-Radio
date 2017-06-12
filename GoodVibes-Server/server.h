@@ -21,12 +21,12 @@ private:
 
 public:
     Server(int nPort, QObject *parent = 0);
-    ~Server();
     QList<Channel> getChannelsList(const QString& hostName);   // return list of channels whose host's name is not equal to hostName
     void start();
 
 protected:
     void incomingConnection(qintptr socketDescriptor);
+
 
 private slots:
 //    void slotNewConnection();
@@ -35,7 +35,7 @@ private slots:
     void slotRequestReady(QByteArray data);
     void slotDisconnected();
     void slotReadUserName(QByteArray data);
-    void slotChannelInfoChanged(const QString& oldName, const QString& newName);
+    void slotChannelInfoChanged();
 
 };
 

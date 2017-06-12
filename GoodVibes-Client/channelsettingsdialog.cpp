@@ -11,7 +11,6 @@ ChannelSettingsDialog::ChannelSettingsDialog(Channel* channel, QWidget *parent)
 
     ui->nameEdit->setText(pChannel->getChannelName());
     ui->welcomeEdit->setText(pChannel->getWelcome());
-    ui->numOfGuests->setValue(pChannel->getMaxGuestsNum());
     ui->descriptEdit->setText(pChannel->getDescription());
     ui->checkBox->setChecked(pChannel->getPrivateStatus());
     if (ui->checkBox->isChecked()) {
@@ -45,7 +44,6 @@ void ChannelSettingsDialog::slotStateChanged() {
 void ChannelSettingsDialog::slotAccepted() {
     pChannel->setChannelName(ui->nameEdit->text());
     pChannel->setChannelWelcome(ui->welcomeEdit->text());
-    pChannel->setMaxGuestsNum(ui->numOfGuests->value());
     pChannel->setChannelDesciption(ui->descriptEdit->toPlainText());
     pChannel->setPrivate(ui->checkBox->isChecked());
     if (pChannel->getPrivateStatus())

@@ -58,3 +58,6 @@ FORMS += \
     playerwidget.ui \
     checkingpasswddialog.ui \
     usernamesettingwidget.ui
+
+RESOURCES += \
+    icons.qrc

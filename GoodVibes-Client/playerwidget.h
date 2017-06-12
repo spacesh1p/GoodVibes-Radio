@@ -42,17 +42,20 @@ private:
 signals:
     void disconnectFromServer();
     void connectToServer();
+    void sendString(const QString& msg);
 
 private slots:
     void slotDataReady(QByteArray data);
     void slotError(const QString& strError);
     void slotConnected();
     void slotDisconnected();
-    void slotRestart();
     void slotDisconnectFromChannel();
     void slotMediaStatusChanged(QMediaPlayer::MediaStatus status);
     void slotSetPosition(bool seekable);
     void slotBackClicked();
+    void slotVolumeClicked(bool state);
+    void slotVolumeChanged(int val);
+    void slotSendMessage();
 };
 
 #endif // PLAYERWIDGET_H

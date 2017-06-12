@@ -2,6 +2,8 @@
 #include <QtAlgorithms>
 #include <QCommandLinkButton>
 #include <QTime>
+#include <QToolButton>
+#include <QtDebug>
 #include "mediahandler.h"
 #include "socketthread.h"
 #include "channelwidget.h"
@@ -19,6 +21,7 @@ MediaHandler::MediaHandler(ChannelWidget* channelWidget)
             this, SLOT(slotMediaStatusChanged(QMediaPlayer::MediaStatus)));
     connect(this, SIGNAL(songAdded(int)),
             this, SLOT(slotSongAdded(int)));
+    isConnected = true;
 }
 
 MediaHandler::~MediaHandler() {
@@ -59,15 +62,13 @@ void MediaHandler::addSong(const QString& path) {
         QCommandLinkButton* pButton = new QCommandLinkButton(songName);             // create buttons for songs
         pButton->setCheckable(true);
         pButton->setAutoExclusive(true);
+        pButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        pButton->setIcon(QIcon(":/new/prefix1/icons/interface.png"));
         pChannelWidget->addSongButton(pButton);
         playList.enqueue(qMakePair(path, pButton));
         filesQueue.enqueue(path);
         emit songAdded(playList.size());
     }
-}
-
-void MediaHandler::setMuted(bool state) {
-    pMediaPlayer->setMuted(state);
 }
 
 void MediaHandler::slotSongAdded(int number) {
@@ -82,6 +83,7 @@ void MediaHandler::slotSongAdded(int number) {
     else {
         disconnect(this, SIGNAL(songAdded(int)),
                    this, SLOT(slotSongAdded(int)));
+        isConnected = false;
         connect(pMediaPlayer, SIGNAL(mediaStatusChanged(QMediaPlayer::MediaStatus)),
                 this, SLOT(slotSendNextSong(QMediaPlayer::MediaStatus)));
     }
@@ -91,11 +93,10 @@ void MediaHandler::slotMediaStatusChanged(QMediaPlayer::MediaStatus status) {
     if (status == QMediaPlayer::MediaStatus::LoadedMedia) {
         pMediaPlayer->play();
         emit sendString("<startMedia:" + QTime::currentTime().toString("hh.mm.ss.zzz") + ">");
-        pMediaPlayer->setVolume(pChannelWidget->getSliderVlaue());
+        pMediaPlayer->setVolume(pChannelWidget->getSliderValue());
     }
 
     if (status == QMediaPlayer::MediaStatus::EndOfMedia) {
-        qDebug() << "sendEndOfMedia";
         emit sendString("<endOfMedia>");
         pChannelWidget->removeSongButton(playList.head().second);
         delete playList.head().second;
@@ -104,9 +105,12 @@ void MediaHandler::slotMediaStatusChanged(QMediaPlayer::MediaStatus status) {
             pMediaPlayer->setMedia(QUrl::fromLocalFile(playList.head().first));
             playList.head().second->setChecked(true);
         }
-        else
+        else if (!isConnected) {
+            disconnect(pMediaPlayer, SIGNAL(mediaStatusChanged(QMediaPlayer::MediaStatus)),
+                       this, SLOT(slotSendNextSong(QMediaPlayer::MediaStatus)));
             connect(this, SIGNAL(songAdded(int)),
                     this, SLOT(slotSongAdded(int)));
+        }
     }
 }
 
@@ -118,21 +122,16 @@ void MediaHandler::slotSendNextSong(QMediaPlayer::MediaStatus status) {
         }
 }
 
-void MediaHandler::slotMutedChanged(bool state) {
-    pMediaPlayer->setMuted(state);
-}
-
-
-void MediaHandler::slotChangeVolume(int value) {
-    pMediaPlayer->setVolume(value);
-}
-
-void MediaHandler::slotDisconnected() {
-    pMediaPlayer->stop();    // need to solve how to stop player
+void MediaHandler::slotError() {
+    pMediaPlayer->setMedia(QMediaContent());
     filesQueue.clear();
     for (auto it = playList.begin(); it != playList.end(); ++it) {
         pChannelWidget->removeSongButton(it->second);
         delete it->second;
     }
     playList.clear();
+}
+
+QMediaPlayer* MediaHandler::getMediaPlayer() {
+    return pMediaPlayer;
 }

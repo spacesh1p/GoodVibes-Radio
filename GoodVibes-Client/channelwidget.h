@@ -11,6 +11,7 @@ class Channel;
 class ChannelSettingsDialog;
 class ChooseChannelWidget;
 class MediaHandler;
+class QMediaPlayer;
 class QCommandLinkButton;
 class QFile;
 class SocketThread;
@@ -29,13 +30,14 @@ public:
     void removeSongButton(QCommandLinkButton* button);
     void unmute();
     SocketThread* getMediaSender();
-    int getSliderVlaue();
+    int getSliderValue();
 
 private:
     Ui::ChannelWidget *ui;
     QString userName;
     Channel* pChannel;
     MediaHandler* pMediaHandler;
+    QMediaPlayer* pMediaPlayer;
     ChooseChannelWidget* pChooseChannelWidget;
     ChannelSettingsDialog* pSettingsDialog;
     SocketThread* pTextSender;
@@ -46,6 +48,7 @@ signals:
     void disconnectFromServer();
     void connectToServer();
     void sendChannelData(const Channel& data);
+    void sendString(const QString& msg);
 
 private slots:
     void slotOpenFiles();
@@ -58,6 +61,11 @@ private slots:
     void slotFileNotOpened();
     void slotDataReady(QByteArray data);
     void slotUpdateData();
+    void slotVolumeChanged(int val);
+    void slotVolumeClicked(bool state);
+    void slotSeekable(bool state);
+    void slotSkip();
+    void slotSendMessage();
 };
 
 

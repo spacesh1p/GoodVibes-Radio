@@ -6,7 +6,6 @@
 Socket::Socket(qintptr socketDescriptor, QObject *parent)
     : QObject(parent)
 {
-    qDebug() << socketDescriptor;
     pSocket = new QTcpSocket(this);
 
     connect(pSocket, SIGNAL(disconnected()),
@@ -53,7 +52,6 @@ void Socket::slotDisconnectFromServer() {
 }
 
 void Socket::slotReadyRead() {
-    qDebug() << "data ready";
     QDataStream in(pSocket);
     in.setVersion(QDataStream::Qt_5_3);
 

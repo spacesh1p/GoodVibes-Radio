@@ -26,7 +26,7 @@ ChannelWidget::ChannelWidget(Channel* channel, QWidget *parent)
         userName = pChooseChannelWidget->getUserName();
 
     pSettingsDialog = new ChannelSettingsDialog(pChannel, this);        // create setting dialog object
-    connect(pSettingsDialog, SIGNAL(settingsSeted()),
+    connect(pChooseChannelWidget, SIGNAL(channelCreated()),
             this, SLOT(slotChannelCreated()));
 
     pMediaHandler = nullptr;
@@ -58,7 +58,7 @@ Channel* ChannelWidget::getChannel() {
 }
 
 void ChannelWidget::unmute() {
-    pMediaHandler->setMuted(ui->cmdVolume->isChecked());
+    pMediaPlayer->setMuted(ui->cmdVolume->isChecked());
 }
 
 
@@ -74,7 +74,7 @@ SocketThread* ChannelWidget::getMediaSender() {
     return pMediaSender;
 }
 
-int ChannelWidget::getSliderVlaue() {
+int ChannelWidget::getSliderValue() {
     return ui->sldVolume->value();
 }
 
@@ -90,6 +90,7 @@ void ChannelWidget::slotConnected() {
         ui->textView->append("Connection received.");
     if (pTextSender->isConnected() && pMediaSender->isConnected()) {
         ui->cmdAddSong->setEnabled(true);
+        ui->cmdSend->setEnabled(true);
         disconnect(ui->cmdBack, SIGNAL(clicked()),
                 this, SLOT(slotRestart()));
         connect(ui->cmdBack, SIGNAL(clicked()),                                 // handle cmd Back clicked
@@ -108,6 +109,7 @@ void ChannelWidget::slotError(const QString& strError) {
     if (!str.contains(strError))
         ui->textView->append(strError);
     ui->cmdAddSong->setEnabled(false);
+    ui->cmdSend->setEnabled(false);
     ui->cmdBack->setEnabled(false);
     if (pMediaSender->isConnected() || pTextSender->isConnected())
         emit disconnectFromServer();
@@ -122,7 +124,8 @@ void ChannelWidget::slotDisconnected() {
 
     if (!pTextSender->isConnected() && !pMediaSender->isConnected()) {
         ui->cmdAddSong->setEnabled(false);
-        ui->cmdBack->setText("&Restart");
+        ui->cmdSend->setEnabled(false);
+        ui->cmdBack->setText("&Reconnect");
         disconnect(ui->cmdBack, SIGNAL(clicked()),
                 this, SLOT(slotBackClicked()));
         connect(ui->cmdBack, SIGNAL(clicked()),
@@ -146,9 +149,21 @@ void ChannelWidget::slotDataReady(QByteArray data) {
     if (!identifier.isEmpty()) {
         if (identifier[0] == "guests") {
             ui->lcdNumber->display(identifier[1]);
+            QStringList msg = descriptList[1].split(QRegExp("(<|>|:)"), QString::SkipEmptyParts);
+            ui->textView->append(msg[0] + " " + msg[1]);
         }
         else if (identifier[0] == "request") {
             slotUpdateData();
+        }
+        else if (identifier[0] == "msg") {
+            qDebug() << description;
+            QStringList senderInfo = (descriptList[1].split(QRegExp("(<|>|:)"), QString::SkipEmptyParts));
+            QString senderName = senderInfo[1];
+            if (senderInfo[0] == "host")
+                senderName += "[host]";
+            QStringList timeList = (descriptList[2].split(QRegExp("(<|>|:)"), QString::SkipEmptyParts));
+            ui->textView->append(timeList[1] + ":" + timeList[2] + ":" + timeList[3] +
+                                 " " + senderName + ": " + identifier[1]);
         }
     }
 }
@@ -158,7 +173,7 @@ void ChannelWidget::slotRestart() {
 }
 
 void ChannelWidget::slotBackClicked() {
-    pMediaHandler->setMuted(true);
+    pMediaPlayer->setMuted(true);
     if (pChooseChannelWidget != nullptr)
         pChooseChannelWidget->backToChooseChannel();
 }
@@ -168,7 +183,7 @@ void ChannelWidget::slotFileNotOpened() {
 }
 
 void ChannelWidget::slotChannelCreated() {
-    disconnect(pSettingsDialog, SIGNAL(settingsSeted()),
+    disconnect(pChooseChannelWidget, SIGNAL(channelCreated()),
             this, SLOT(slotChannelCreated()));
     connect(pSettingsDialog, SIGNAL(settingsSeted()),
             this, SLOT(slotUpdateData()));
@@ -205,26 +220,41 @@ void ChannelWidget::slotChannelCreated() {
             pMediaSender, SLOT(slotConnectToServer()));
     connect(this, SIGNAL(disconnectFromServer()),
             pMediaSender, SLOT(slotDisconnectFromServer()));
+    connect(this, SIGNAL(sendString(QString)),
+            pMediaSender, SLOT(slotSendString(QString)));
 
     emit connectToServer();
 
     pMediaHandler = new MediaHandler(this);                                 // create MediaHandler object
+    pMediaPlayer = pMediaHandler->getMediaPlayer();
 
+    connect(pMediaPlayer, SIGNAL(seekableChanged(bool)),
+            this, SLOT(slotSeekable(bool)));
 
     ui->cmdAddSong->setEnabled(false);
     ui->cmdBack->setEnabled(false);
+    ui->cmdSkip->setEnabled(false);
+    ui->cmdSend->setEnabled(false);
     ui->sldVolume->setValue(50);
 
+    connect(ui->cmdSend, SIGNAL(clicked()),
+            this, SLOT(slotSendMessage()));
+    connect(ui->cmdSkip, SIGNAL(clicked()),
+            this, SLOT(slotSkip()));
     connect(ui->cmdAddSong, SIGNAL(clicked()),                              // handle Add Song button clicked
             this, SLOT(slotOpenFiles()));
     connect(ui->cmdTurnOff, SIGNAL(clicked()),
             pChooseChannelWidget, SLOT(slotTurnOffChannel()));
     connect(ui->cmdVolume, SIGNAL(clicked(bool)),
-            pMediaHandler, SLOT(slotMutedChanged(bool)));
+            pMediaPlayer, SLOT(setMuted(bool)));
+    connect(ui->cmdVolume, SIGNAL(clicked(bool)),
+            this, SLOT(slotVolumeClicked(bool)));
     connect(ui->sldVolume, SIGNAL(valueChanged(int)),
-            pMediaHandler, SLOT(slotChangeVolume(int)));
-    connect(pMediaSender, SIGNAL(disconnectedFromServer()),
-            pMediaHandler, SLOT(slotDisconnected()));
+            pMediaPlayer, SLOT(setVolume(int)));
+    connect(ui->sldVolume, SIGNAL(valueChanged(int)),
+            this, SLOT(slotVolumeChanged(int)));
+    connect(pMediaSender, SIGNAL(connectionError(QString)),
+            pMediaHandler, SLOT(slotError()));
 
     ui->channelName->setText(pChannel->getChannelName());
     ui->lcdNumber->display(0);
@@ -232,5 +262,39 @@ void ChannelWidget::slotChannelCreated() {
 
 void ChannelWidget::slotUpdateData() {
     emit sendChannelData(*pChannel);
+}
+
+void ChannelWidget::slotVolumeClicked(bool state) {
+    if (state)
+        ui->cmdVolume->setIcon(QIcon(":/new/prefix1/icons/mute-volume.png"));
+    else if (ui->sldVolume->value() <= 50)
+        ui->cmdVolume->setIcon(QIcon(":/new/prefix1/icons/low-volume.png"));
+    else
+        ui->cmdVolume->setIcon(QIcon(":/new/prefix1/icons/high-volume.png"));
+}
+
+void ChannelWidget::slotVolumeChanged(int val) {
+    if (val <= 50)
+        ui->cmdVolume->setIcon(QIcon(":/new/prefix1/icons/low-volume.png"));
+    else
+        ui->cmdVolume->setIcon(QIcon(":/new/prefix1/icons/high-volume.png"));
+}
+
+void ChannelWidget::slotSeekable(bool state) {
+    if (state)
+        ui->cmdSkip->setEnabled(true);
+    else
+        ui->cmdSkip->setEnabled(false);
+
+}
+
+void ChannelWidget::slotSkip() {
+    emit sendString("<skip>");
+    pMediaPlayer->setPosition(pMediaPlayer->duration());
+}
+
+void ChannelWidget::slotSendMessage() {
+    emit sendString("<msg:" + ui->msgEdit->text() + ">,<host:" + userName + ">");
+    ui->msgEdit->setText("");
 }
 

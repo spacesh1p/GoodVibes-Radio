@@ -17,7 +17,6 @@ Server::Server(int nPort, QObject *parent)
 }
 
 void Server::incomingConnection(qintptr socketDescriptor) {
-    qDebug() << "new connection";
     SocketThread* pSocketThread = new SocketThread(socketDescriptor);
     connect(pSocketThread, SIGNAL(dataReady(QByteArray)),
             this, SLOT(slotReadDescription(QByteArray)));
@@ -25,42 +24,11 @@ void Server::incomingConnection(qintptr socketDescriptor) {
             pSocketThread, SLOT(deleteLater()));
 }
 
-//Server::Server(int nPort, QObject *parent)
-//    : QObject(parent)
-//{
-//    pServer = new QTcpServer(this);
-//    connect(pServer, SIGNAL(newConnection()),
-//            this, SLOT(slotNewConnection()));
-//    if (!pServer->listen(QHostAddress::Any, nPort)) {
-//        qDebug() << ("Unable to start the server:" + pServer->errorString());
-//        pServer->close();
-//        return;
-//    }
-//    else
-//        qDebug() << "Server is launched.";
-//}
-
-Server::~Server() {
-//    pServer->close();
-//    delete pServer;
-}
-
 void Server::start() {
     while (true);
 }
 
-//void Server::slotNewConnection() {
-//    qDebug() << "new connection";
-//    SocketThread* pSocketThread = new SocketThread(pServer->in);
-//    connect(pSocketThread, SIGNAL(dataReady(QByteArray)),
-//            this, SLOT(slotReadDescription(QByteArray)));
-//    connect(pSocketThread, SIGNAL(disconnectedFromServer()),
-//            pSocketThread, SLOT(deleteLater()));
-//    pSocketThread->slotSendString("OK");
-//}
-
 void Server::slotReadDescription(QByteArray data) {
-    qDebug() << "read description";
     SocketThread* pClient = (SocketThread*)sender();
     disconnect(pClient, SIGNAL(dataReady(QByteArray)),
                this, SLOT(slotReadDescription(QByteArray)));
@@ -82,13 +50,12 @@ void Server::slotReadDescription(QByteArray data) {
                 pChHandler = new ChannelHandler(this);
                 connect(pChHandler, SIGNAL(channelClosed()),
                         this, SLOT(slotChannelClosed()));
-                connect(pChHandler, SIGNAL(channelInfoChanged(QString,QString)),
-                        this, SLOT(slotChannelInfoChanged(QString,QString)));
+                connect(pChHandler, SIGNAL(channelInfoChanged()),
+                        this, SLOT(slotChannelInfoChanged()));
                 (channelsMap[identifier[1]])[chName] = pChHandler;
             }
             else
                 pChHandler = (channelsMap[identifier[1]])[chName];
-            qDebug() << "in readDescription\n>>" << channelsMap;
             QString purposeStr = (descriptList[2].split(QRegExp("(<|>|:)"), QString::SkipEmptyParts))[1];
             if (purposeStr == "sendChannelInfo")
                 pChHandler->setHostTextSocket(pClient);
@@ -102,10 +69,20 @@ void Server::slotReadDescription(QByteArray data) {
                 QString hostStr = (descriptList[1].split(QRegExp("(<|>|:)"), QString::SkipEmptyParts))[1];
                 QString chName = (descriptList[2].split(QRegExp("(<|>|:)"), QString::SkipEmptyParts))[1];
                 QString purposeStr = (descriptList[3].split(QRegExp("(<|>|:)"), QString::SkipEmptyParts))[1];
-                if (channelsMap.contains(hostStr))
-                    if (channelsMap[hostStr].contains(chName))
-                        if (purposeStr == "readMedia")
+                if (channelsMap.contains(hostStr)) {
+                    if (channelsMap[hostStr].contains(chName)) {
+                        if (purposeStr == "readMedia") {
                             (channelsMap[hostStr])[chName]->addMediaSocket(identifier[1], pClient);
+                            disconnect(pClient, SIGNAL(disconnectedFromServer()),
+                                       pClient, SLOT(deleteLater()));
+                        }
+                    }
+                    else
+                        pClient->deleteLater();
+                }
+                else
+                    pClient->deleteLater();
+
             }
             else if (descriptList.size() == 2) {
                 QString purposeStr = (descriptList[1].split(QRegExp("(<|>|:)"), QString::SkipEmptyParts))[1];
@@ -115,10 +92,10 @@ void Server::slotReadDescription(QByteArray data) {
                     connect(pClient, SIGNAL(disconnectedFromServer()),
                             this, SLOT(slotDisconnected()));
                     usersTextSocets[identifier[1]] = pClient;
+                    disconnect(pClient, SIGNAL(disconnectedFromServer()),
+                               pClient, SLOT(deleteLater()));
                 }
             }
-            disconnect(pClient, SIGNAL(disconnectedFromServer()),
-                       pClient, SLOT(deleteLater()));
         }
         else if (identifier[0] == "username") {
             connect(pClient, SIGNAL(dataReady(QByteArray)),
@@ -128,10 +105,11 @@ void Server::slotReadDescription(QByteArray data) {
             pClient->deleteLater();
         }
     }
+    else
+        pClient->deleteLater();
 }
 
 void Server::slotReadUserName(QByteArray data) {
-    qDebug() << "read username";
     SocketThread* pClient = (SocketThread*)sender();
     QDataStream in(&data, QIODevice::ReadOnly);
     in.setVersion(QDataStream::Qt_5_3);
@@ -160,11 +138,9 @@ void Server::slotRequestReady(QByteArray data) {
     in.setVersion(QDataStream::Qt_5_3);
     QString recievedStr;
     in >> recievedStr;
-    qDebug() << recievedStr;
     if (recievedStr == "<request>") {
         QList<Channel> channelsList;
         QString userStr = findSocketUser(pClient);
-        qDebug() << channelsMap;
         for (auto it = channelsMap.begin(); it != channelsMap.end(); it++) {
             if (it.key() != userStr) {
                 for (auto itr = (*it).begin(); itr != (*it).end(); itr++)
@@ -188,11 +164,17 @@ void Server::slotDisconnected() {
     pClient->deleteLater();
 }
 
-void Server::slotChannelInfoChanged(const QString& oldName, const QString& newName) {
+void Server::slotChannelInfoChanged() {
     ChannelHandler* pChHandler = (ChannelHandler*)sender();
     QString hostName = pChHandler->getChannel().getHostName();
-    channelsMap[hostName].remove(oldName);
-    (channelsMap[hostName])[newName] = pChHandler;
+    QString key;
+    for (auto it = channelsMap[hostName].begin(); it != channelsMap[hostName].end(); it++)
+        if (it.value() == pChHandler) {
+            key = it.key();
+            break;
+        }
+    channelsMap[hostName].remove(key);
+    (channelsMap[hostName])[pChHandler->getChannel().getChannelName()] = pChHandler;
 }
 
 void Server::slotChannelClosed() {

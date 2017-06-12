@@ -34,7 +34,7 @@ void ChannelHandler::setHostTextSocket(SocketThread* socketThread) {
             this, SLOT(slotTextDataReady(QByteArray)));
     connect(pHostTextSender, SIGNAL(disconnectedFromServer()),
             this, SLOT(slotDisconected()));
-    connect(this, SIGNAL(sendNumOfGuests(QString)),
+    connect(this, SIGNAL(sendMessage(QString)),
             pHostTextSender, SLOT(slotSendString(QString)));
     connect (this, SIGNAL(sendString(QString)),
              pHostTextSender, SLOT(slotSendString(QString)));
@@ -52,14 +52,18 @@ void ChannelHandler::setHostMediaSocket(SocketThread* socketThread) {
 
 void ChannelHandler::addMediaSocket(const QString& userName, SocketThread* socketThread) {
     SocketThread* pUserSocket = socketThread;
-    connect(this, SIGNAL(sendNumOfGuests(QString)),
+    connect(this, SIGNAL(sendSkip(QString)),
+            pUserSocket, SLOT(slotSendString(QString)));
+    connect(this, SIGNAL(sendMessage(QString)),
             pUserSocket, SLOT(slotSendString(QString)));
     connect(pUserSocket, SIGNAL(disconnectedFromServer()),
             this, SLOT(slotUserDisconnected()));
     connect(this, SIGNAL(sendData(QByteArray)),
             pUserSocket, SLOT(slotSendData(QByteArray)));
+    connect(pUserSocket, SIGNAL(dataReady(QByteArray)),
+            this, SLOT(slotMediaDataReady(QByteArray)));
     usersMediaSockets[userName] = pUserSocket;
-    emit sendNumOfGuests("<guests:" + QString::number(usersMediaSockets.size()) + ">");
+    emit sendMessage("<guests:" + QString::number(usersMediaSockets.size()) + ">,<" + userName + ":connected.>");
     sendSongs(pUserSocket);
 }
 
@@ -68,11 +72,10 @@ Channel ChannelHandler::getChannel() {
 }
 
 void ChannelHandler::slotTextDataReady(QByteArray data) {
-    QString oldName = channel.getChannelName();
     QDataStream in(&data, QIODevice::ReadOnly);
     in.setVersion(QDataStream::Qt_5_3);
     in >> channel;
-    emit channelInfoChanged(oldName, channel.getChannelName());
+    emit channelInfoChanged();
 }
 
 void ChannelHandler::slotMediaDataReady(QByteArray data) {
@@ -85,7 +88,6 @@ void ChannelHandler::slotMediaDataReady(QByteArray data) {
     }
 
     else if (identifier[0] == "endOfMedia") {
-        qDebug() << "endOfMedia";
         songsQueue.dequeue();
         startTime.dequeue();
     }
@@ -112,6 +114,12 @@ void ChannelHandler::slotMediaDataReady(QByteArray data) {
         out1 << quint64(arr.size() - sizeof(quint64));
         emit sendNextSong(arr);
     }
+    else if (identifier[0] == "skip") {
+        emit sendSkip("<skip>");
+    }
+    else if (identifier[0] == "msg") {
+        emit sendMessage(description + ",<time:" + QTime::currentTime().toString("hh:mm:ss") + ">");
+    }
 }
 
 void ChannelHandler::slotDisconected() {
@@ -121,14 +129,13 @@ void ChannelHandler::slotDisconected() {
 }
 
 void ChannelHandler::slotUserDisconnected() {
-    qDebug() << "userDisconnected";
     QString userName;
     for (auto it = usersMediaSockets.begin(); it != usersMediaSockets.end(); it++)
         if (it.value() == sender())
             userName = it.key();
     usersMediaSockets[userName]->deleteLater();
     usersMediaSockets.remove(userName);
-    emit sendNumOfGuests("<guests:" + QString::number(usersMediaSockets.size()) + ">");
+    emit sendMessage("<guests:" + QString::number(usersMediaSockets.size()) + ">,<" + userName + ":disconnected.>");
 }
 
 void ChannelHandler::sendSongs(SocketThread *sender) {

@@ -54,7 +54,6 @@ void UserNameSettingWidget::slotOkClicked() {
 }
 
 void UserNameSettingWidget::slotDataReady(QByteArray data) {
-    qDebug() << "data ready";
     QDataStream in(&data, QIODevice::ReadOnly);
     in.setVersion(QDataStream::Qt_5_3);
     in >> accepted;

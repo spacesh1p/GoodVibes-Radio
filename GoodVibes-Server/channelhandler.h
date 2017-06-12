@@ -40,9 +40,10 @@ signals:
     void sendData(QByteArray data);
     void sendString(const QString& msg);
     void channelClosed();
-    void sendNumOfGuests(const QString& strNum);
+    void sendMessage(const QString& strNum);
     void sendNextSong(QByteArray data);
-    void channelInfoChanged(const QString& oldName, const QString& newName);
+    void channelInfoChanged();
+    void sendSkip(const QString& skip);
 
 public slots:
     void slotDisconected();

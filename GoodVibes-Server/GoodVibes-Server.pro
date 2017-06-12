@@ -32,5 +32,4 @@ HEADERS += \
     socket.h \
     socketthread.h \
     channel.h \
-    serverinfo.h \
     channelhandler.h

@@ -42,11 +42,13 @@ private:
 
     ChannelWidget* getHostChannel(const QString& channelName);
     Channel* getGuestChannel(const QString& channelName);
+    bool isChannelNameFree(const QString& name);
 
 signals:
     void connectToServer();
     void disconnectFromServer();
     void sendString(const QString& msg);
+    void channelCreated();
 
 private slots:
     void slotCreateChannel();

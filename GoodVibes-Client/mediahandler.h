@@ -19,6 +19,7 @@ private:
     QQueue<QString> filesQueue;
     ChannelWidget* pChannelWidget;
     SocketThread* pMediaSender;
+    bool isConnected;
 
     bool contains(const QString& path);
     QString getFileName(const QString& path);
@@ -27,7 +28,7 @@ public:
     MediaHandler(ChannelWidget* channelWidget);
     ~MediaHandler();
     void addSong(const QString& path);
-    void setMuted(bool state);
+    QMediaPlayer* getMediaPlayer();
 
 signals:
     void songAdded(int number);
@@ -38,10 +39,7 @@ private slots:
     void slotSongAdded(int number);
     void slotMediaStatusChanged(QMediaPlayer::MediaStatus status);
     void slotSendNextSong(QMediaPlayer::MediaStatus status);
-    void slotMutedChanged(bool state);
-    void slotChangeVolume(int value);
-    void slotDisconnected();
-
+    void slotError();
 };
 
 #endif // MEDIAHANDLER_H

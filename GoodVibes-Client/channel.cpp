@@ -2,19 +2,14 @@
 #include <QDataStream>
 #include "channel.h"
 
-int Channel::newChannelsCounter = 0;
 
 Channel::Channel(const QString& host)
     : hostName(host)
 {
     // default settings
     channelName = "New channel";
-    if (newChannelsCounter > 0)
-        channelName += QString::number(newChannelsCounter);
     channelWelcome = "Welcome to " + channelName;
-    maxGuestsNum = 20;
     isPrivate = false;
-    newChannelsCounter++;
 }
 
 Channel::Channel(const Channel& channel) {
@@ -22,7 +17,6 @@ Channel::Channel(const Channel& channel) {
     channelName = channel.channelName;
     channelWelcome = channel.channelWelcome;
     channelDescription = channel.channelDescription;
-    maxGuestsNum = channel.maxGuestsNum;
     isPrivate = channel.isPrivate;
     password = channel.password;
 }
@@ -41,10 +35,6 @@ void Channel::setChannelWelcome(const QString& welcome) {
 
 void Channel::setChannelDesciption(const QString& descript) {
     channelDescription = descript;
-}
-
-void Channel::setMaxGuestsNum(int num) {
-    maxGuestsNum = num;
 }
 
 void Channel::setPrivate(bool state) {
@@ -67,10 +57,6 @@ QString Channel::getDescription() const {
     return channelDescription;
 }
 
-int Channel::getMaxGuestsNum() const {
-    return maxGuestsNum;
-}
-
 bool Channel::getPrivateStatus() const {
     return isPrivate;
 }
@@ -88,7 +74,6 @@ QDataStream& operator<<(QDataStream& out, const Channel& channel) {
     out << channel.hostName;
     out << channel.channelName;
     out << channel.channelWelcome;
-    out << channel.maxGuestsNum;
     out << channel.channelDescription;
     out << channel.isPrivate;
     out << channel.password;
@@ -99,7 +84,6 @@ QDataStream& operator>>(QDataStream& in, Channel& channel) {
     in >> channel.hostName;
     in >> channel.channelName;
     in >> channel.channelWelcome;
-    in >> channel.maxGuestsNum;
     in >> channel.channelDescription;
     in >> channel.isPrivate;
     in >> channel.password;

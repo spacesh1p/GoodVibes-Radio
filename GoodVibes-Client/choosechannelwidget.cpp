@@ -68,26 +68,36 @@ QString ChooseChannelWidget::getUserName() {
     return userName;
 }
 
+bool ChooseChannelWidget::isChannelNameFree(const QString& name) {
+    for (auto it = hostChannelsList.begin(); it != hostChannelsList.end(); it++)
+        if ((*it)->getChannel()->getChannelName() == name)
+            return false;
+    return true;
+}
+
 void ChooseChannelWidget::slotCreateChannel() {
     ChannelWidget* pChannelWidget = new ChannelWidget(new Channel(userName), this);     // create new channel widget
     if (pChannelWidget->openSettingsDialog()) {                                         // open setting dialog window
-        hostChannelsList.append(pChannelWidget);                                        // append it to the list
-        for (auto it = guestButtons.begin(); it != guestButtons.end(); it++)
-            (*it)->setEnabled(false);
-        QCommandLinkButton* pChannelButton = new QCommandLinkButton((pChannelWidget->getChannel())->getChannelName());
-        pChannelButton->setCheckable(true);
-        pChannelButton->setAutoExclusive(true);
-        pChannelButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-        int row, col, rs, cs;
-        ui->channelsLayout->getItemPosition((ui->channelsLayout)->indexOf(ui->hostLine), &row, &col, &rs, &cs);
-        ui->channelsLayout->removeWidget(ui->hostLine);
-        ui->channelsLayout->addWidget(pChannelButton, row, col, rs, cs);
-        ui->channelsLayout->addWidget(ui->hostLine, row + 1, col, rs, cs);
-        connect(pChannelButton, SIGNAL(toggled(bool)),
-                this, SLOT(slotHostChannelClicked()));
-        pChannelButton->setChecked(true);
-        hostButtons.append(pChannelButton);
-        pMainWindow->addWidget(pChannelWidget);
+        if (isChannelNameFree(pChannelWidget->getChannel()->getChannelName())) {
+            emit channelCreated();
+            hostChannelsList.append(pChannelWidget);                                        // append it to the list
+            QCommandLinkButton* pChannelButton = new QCommandLinkButton((pChannelWidget->getChannel())->getChannelName());
+            pChannelButton->setCheckable(true);
+            pChannelButton->setAutoExclusive(true);
+            pChannelButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+            pChannelButton->setIcon(QIcon(":/new/prefix1/icons/login.png"));
+            ui->channelsLayout->insertWidget(ui->channelsLayout->indexOf(ui->hostLine), pChannelButton);
+            connect(pChannelButton, SIGNAL(toggled(bool)),
+                    this, SLOT(slotHostChannelClicked()));
+            pChannelButton->setChecked(true);
+            hostButtons.append(pChannelButton);
+            pMainWindow->addWidget(pChannelWidget);
+        }
+        else {
+            ui->textEdit->setText("This channel name is already used.");
+            pChannelWidget->deleteLater();
+        }
+
     }
     else {
         pChannelWidget->deleteLater();
@@ -100,7 +110,6 @@ void ChooseChannelWidget::slotEditChannel() {
     if (pChannelWidget->openSettingsDialog()) {
         (pairChoosenHostChannel.second)->setText(pChannel->getChannelName());
         ui->textEdit->setText(pChannel->getChannelName() + "\n" +
-                              "Maximum number of guest: " + QString::number(pChannel->getMaxGuestsNum()) + "\n" +
                               pChannel->getDescription());
     }
 }
@@ -116,7 +125,6 @@ void ChooseChannelWidget::slotHostChannelClicked() {
         pairChoosenHostChannel = qMakePair(pChannelWidget, pButton);                        // write choosen channel
         pairChoosenGuestChannel = qMakePair(nullptr, nullptr);
         ui->textEdit->setText(pChannel->getChannelName() + "\n" +
-                              "Maximum number of guest: " + QString::number(pChannel->getMaxGuestsNum()) + "\n" +
                               pChannel->getDescription());
     }
     else {
@@ -138,7 +146,6 @@ void ChooseChannelWidget::slotGuestChannelClicked() {
         pairChoosenGuestChannel = qMakePair(pChannel, pButton);                             // write choosen channel
         pairChoosenHostChannel = qMakePair(nullptr, nullptr);
         ui->textEdit->setText(pChannel->getChannelName() + "\n" +
-                              "Maximum number of guest: " + QString::number(pChannel->getMaxGuestsNum()) + "\n" +
                               pChannel->getDescription());
     }
     else {
@@ -220,7 +227,6 @@ void ChooseChannelWidget::slotTurnOffChannel() {                                
 }
 
 void ChooseChannelWidget::slotDataReady(QByteArray data) {                  // handle recieving the data from server
-    qDebug() << "read channels info";
     if (pairChoosenGuestChannel.second != nullptr) {
         pairChoosenGuestChannel = qMakePair(nullptr, nullptr);
         if (ui->textEdit->toPlainText().contains("Maximum number of guest: "))
@@ -235,9 +241,6 @@ void ChooseChannelWidget::slotDataReady(QByteArray data) {                  // h
             delete *it;
         }
         guestButtons.clear();
-        int row, col, rs, cs;
-        ui->channelsLayout->getItemPosition((ui->channelsLayout)->indexOf(ui->cmdRefresh), &row, &col, &rs, &cs);
-        ui->channelsLayout->addWidget(ui->guestLine, row + 1, col, rs, cs);
     }
     QList<Channel> channelList;
     QDataStream in(&data, QIODevice::ReadOnly);
@@ -257,11 +260,8 @@ void ChooseChannelWidget::slotDataReady(QByteArray data) {                  // h
         pChannelButton->setCheckable(true);
         pChannelButton->setAutoExclusive(true);
         pChannelButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-        int row, col, rs, cs;
-        ui->channelsLayout->getItemPosition((ui->channelsLayout)->indexOf(ui->guestLine), &row, &col, &rs, &cs);
-        ui->channelsLayout->removeWidget(ui->hostLine);
-        ui->channelsLayout->addWidget(pChannelButton, row, col, rs, cs);
-        ui->channelsLayout->addWidget(ui->guestLine, row + 1, col, rs, cs);
+        pChannelButton->setIcon(QIcon(":/new/prefix1/icons/login.png"));
+        ui->channelsLayout->insertWidget(ui->channelsLayout->indexOf(ui->guestLine), pChannelButton);
         connect(pChannelButton, SIGNAL(toggled(bool)),
                 this, SLOT(slotGuestChannelClicked()));
         guestButtons.append(pChannelButton);

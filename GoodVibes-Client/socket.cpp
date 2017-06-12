@@ -37,7 +37,6 @@ void Socket::sendDescription() {
     out.device()->seek(0);
     out << quint64(arrBlock.size() - sizeof(quint64));
     pSocket->write(arrBlock);
-    qDebug() << "description sended";
     pSocket->flush();
     emit connectedToServer();
 
@@ -84,7 +83,6 @@ void Socket::slotSendFileData(const QString& songName, const QString& path) {
     QByteArray arrBlock;
     QDataStream out(&arrBlock, QIODevice::WriteOnly);
     out.setVersion(QDataStream::Qt_5_3);
-    qDebug() << "song name: " << songName;
     QString strInfo = "<song>,<name:" + songName + ">";
     out << quint64(0) << strInfo << pFile.readAll();             // convert file data into bytes
     out.device()->seek(0);
@@ -123,10 +121,8 @@ void Socket::slotReadyRead() {
             if (pSocket->bytesAvailable() < (qint64)sizeof(qint64))
                 break;
             in >> nextBlockSize;
-            qDebug() << "nbs: " << nextBlockSize;
         }
 
-        qDebug() << "bytes available: " << pSocket->bytesAvailable();
         if(pSocket->bytesAvailable() < (qint64)nextBlockSize)
             break;
 
