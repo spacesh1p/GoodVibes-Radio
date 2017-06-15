@@ -295,7 +295,9 @@ void ChannelWidget::slotSkip() {
 }
 
 void ChannelWidget::slotSendMessage() {
-    emit sendString("<msg:" + ui->msgEdit->text() + ">,<host:" + userName + ">");
-    ui->msgEdit->setText("");
+    if (!ui->msgEdit->text().isEmpty()) {
+        emit sendString("<msg:" + ui->msgEdit->text() + ">,<host:" + userName + ">");
+        ui->msgEdit->setText("");
+    }
 }
 

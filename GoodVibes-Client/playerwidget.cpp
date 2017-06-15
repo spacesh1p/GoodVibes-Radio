@@ -92,7 +92,7 @@ void PlayerWidget::slotMediaStatusChanged(QMediaPlayer::MediaStatus status) {
 }
 
 void PlayerWidget::slotSetPosition(bool seekable) {
-    if (seekable && buffer.isOpen()) {
+    if (seekable) {
         quint64 position = positionQueue.dequeue();
         pMediaPlayer->setPosition(position);
         disconnect(pMediaPlayer, SIGNAL(seekableChanged(bool)),
@@ -102,8 +102,8 @@ void PlayerWidget::slotSetPosition(bool seekable) {
 
 void PlayerWidget::slotConnected() {
     ui->cmdSend->setEnabled(true);
-    firstSong = true;
     enabled = false;
+    firstSong = true;
     ui->textEdit->append(pChannel->getWelcome());
     ui->cmdBack->setText("&Disconnect");
     disconnect(ui->cmdBack, SIGNAL(clicked()),
@@ -195,8 +195,9 @@ void PlayerWidget::setNextSong() {
     }
     else {
         ui->songNameLine->setText("");
-        if (buffer.isOpen())
-            buffer.close();
+        pMediaPlayer->stop();
+        pMediaPlayer->setMedia(QMediaContent(), nullptr);
+        firstSong = true;
     }
 }
 
@@ -205,8 +206,7 @@ void PlayerWidget::slotBackClicked() {
     songsQueue.clear();
     positionQueue.clear();
     pMediaPlayer->stop();
-    if (buffer.isOpen())
-        buffer.close();
+    pMediaPlayer->setMedia(QMediaContent(), nullptr);
     pChooseChannelWidget->backToChooseChannel();
 }
 
@@ -215,8 +215,7 @@ void PlayerWidget::slotDisconnectFromChannel() {
     songsQueue.clear();
     positionQueue.clear();
     pMediaPlayer->stop();
-    if (buffer.isOpen())
-        buffer.close();
+    pMediaPlayer->setMedia(QMediaContent(), nullptr);
     emit disconnectFromServer();
     pChooseChannelWidget->backToChooseChannel();
 }
@@ -238,7 +237,8 @@ void PlayerWidget::slotVolumeChanged(int val) {
 }
 
 void PlayerWidget::slotSendMessage() {
-    // may be here need to check if msgEdit is empty
-    emit sendString("<msg:" + ui->msgEdit->text() + ">,<guest:" + userName + ">");
-    ui->msgEdit->setText("");
+    if (!ui->msgEdit->text().isEmpty()) {
+        emit sendString("<msg:" + ui->msgEdit->text() + ">,<guest:" + userName + ">");
+        ui->msgEdit->setText("");
+    }
 }
