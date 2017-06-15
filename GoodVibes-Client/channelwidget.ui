@@ -60,17 +60,70 @@
          <item>
           <widget class="QLabel" name="numOfListeners">
            <property name="text">
-            <string>Listeners</string>
+            <string>Number of listeners</string>
            </property>
           </widget>
          </item>
          <item>
+          <spacer name="horizontalSpacer_5">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
           <widget class="QLCDNumber" name="lcdNumber">
+           <property name="palette">
+            <palette>
+             <active>
+              <colorrole role="Light">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>0</red>
+                 <green>0</green>
+                 <blue>0</blue>
+                </color>
+               </brush>
+              </colorrole>
+             </active>
+             <inactive>
+              <colorrole role="Light">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>0</red>
+                 <green>0</green>
+                 <blue>0</blue>
+                </color>
+               </brush>
+              </colorrole>
+             </inactive>
+             <disabled>
+              <colorrole role="Light">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>0</red>
+                 <green>0</green>
+                 <blue>0</blue>
+                </color>
+               </brush>
+              </colorrole>
+             </disabled>
+            </palette>
+           </property>
            <property name="font">
             <font>
              <weight>50</weight>
              <bold>false</bold>
             </font>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::StyledPanel</enum>
            </property>
           </widget>
          </item>

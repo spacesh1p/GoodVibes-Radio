@@ -8,12 +8,8 @@
 
 Server::Server(int nPort, QObject *parent)
     : QTcpServer(parent)
+    , port(nPort)
 {
-    if (!this->listen(QHostAddress::Any, nPort)) {
-            qDebug() << "Unable to start the server:" + this->errorString();
-            this->close();
-            return;
-        }
 }
 
 void Server::incomingConnection(qintptr socketDescriptor) {
@@ -25,7 +21,13 @@ void Server::incomingConnection(qintptr socketDescriptor) {
 }
 
 void Server::start() {
-    while (true);
+    if (!this->listen(QHostAddress::Any, port)) {
+            qDebug() << "Unable to start the server:" + this->errorString();
+            this->close();
+            return;
+        }
+    else
+        qDebug() << "Server launched.";
 }
 
 void Server::slotReadDescription(QByteArray data) {
@@ -37,7 +39,6 @@ void Server::slotReadDescription(QByteArray data) {
     in.setVersion(QDataStream::Qt_5_3);
     QString description;
     in >> description;
-    qDebug() << description;
     QStringList descriptList = description.split(",", QString::SkipEmptyParts);
     QStringList identifier;
     if (!descriptList.isEmpty())

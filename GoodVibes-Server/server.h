@@ -13,7 +13,7 @@ class Server : public QTcpServer
     Q_OBJECT
 
 private:
-//    QTcpServer* pServer;
+    int port;
     QMap<QString, QMap<QString, ChannelHandler*>> channelsMap;
     QMap<QString, SocketThread*> usersTextSocets;
 
@@ -29,7 +29,6 @@ protected:
 
 
 private slots:
-//    void slotNewConnection();
     void slotReadDescription(QByteArray data);
     void slotChannelClosed();
     void slotRequestReady(QByteArray data);

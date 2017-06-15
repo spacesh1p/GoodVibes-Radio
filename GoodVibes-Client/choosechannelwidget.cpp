@@ -188,6 +188,8 @@ void ChooseChannelWidget::slotChooseClicked() {                                 
                     if (pCheckingPasswdDialog->getPasswdLine() != pairChoosenGuestChannel.first->getPassword())
                         access = false;
                 }
+                else
+                    access = false;
             }
 
             if (access) {
@@ -216,7 +218,7 @@ void ChooseChannelWidget::slotTurnOffChannel() {                                
             (*it)->setEnabled(true);
     }
     ui->channelsLayout->removeWidget(pairChoosenHostChannel.second);
-    if (ui->textEdit->toPlainText().contains("Maximum number of guest: "))
+    if (!ui->textEdit->toPlainText().contains("Error: "))
         ui->textEdit->setText("Good Vibes Radio\n" + QDateTime::currentDateTime().toString("ddd, d MMMM HH:mm"));
     if (ui->cmdEdit->text() == "&Edit")
         ui->cmdEdit->setEnabled(false);
@@ -229,7 +231,7 @@ void ChooseChannelWidget::slotTurnOffChannel() {                                
 void ChooseChannelWidget::slotDataReady(QByteArray data) {                  // handle recieving the data from server
     if (pairChoosenGuestChannel.second != nullptr) {
         pairChoosenGuestChannel = qMakePair(nullptr, nullptr);
-        if (ui->textEdit->toPlainText().contains("Maximum number of guest: "))
+        if (!ui->textEdit->toPlainText().contains("Error: "))
             ui->textEdit->setText("Good Vibes Radio\n" + QDateTime::currentDateTime().toString("ddd, d MMMM HH:mm"));
     }
     if (!guestChannelsList.isEmpty()) {

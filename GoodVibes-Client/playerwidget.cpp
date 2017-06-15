@@ -55,6 +55,8 @@ PlayerWidget::PlayerWidget(QWidget *parent) :
     ui->cmdSend->setEnabled(false);
     connect(ui->cmdSend, SIGNAL(clicked()),
             this, SLOT(slotSendMessage()));
+    connect(ui->msgEdit, SIGNAL(returnPressed()),
+            this, SLOT(slotSendMessage()));
     enabled = true;
 }
 
@@ -202,6 +204,7 @@ void PlayerWidget::slotBackClicked() {
     ui->songNameLine->setText("");
     songsQueue.clear();
     positionQueue.clear();
+    pMediaPlayer->stop();
     if (buffer.isOpen())
         buffer.close();
     pChooseChannelWidget->backToChooseChannel();
@@ -211,6 +214,7 @@ void PlayerWidget::slotDisconnectFromChannel() {
     ui->songNameLine->setText("");
     songsQueue.clear();
     positionQueue.clear();
+    pMediaPlayer->stop();
     if (buffer.isOpen())
         buffer.close();
     emit disconnectFromServer();
@@ -234,6 +238,7 @@ void PlayerWidget::slotVolumeChanged(int val) {
 }
 
 void PlayerWidget::slotSendMessage() {
+    // may be here need to check if msgEdit is empty
     emit sendString("<msg:" + ui->msgEdit->text() + ">,<guest:" + userName + ">");
     ui->msgEdit->setText("");
 }

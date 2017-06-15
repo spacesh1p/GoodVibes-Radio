@@ -156,7 +156,6 @@ void ChannelWidget::slotDataReady(QByteArray data) {
             slotUpdateData();
         }
         else if (identifier[0] == "msg") {
-            qDebug() << description;
             QStringList senderInfo = (descriptList[1].split(QRegExp("(<|>|:)"), QString::SkipEmptyParts));
             QString senderName = senderInfo[1];
             if (senderInfo[0] == "host")
@@ -238,6 +237,8 @@ void ChannelWidget::slotChannelCreated() {
     ui->sldVolume->setValue(50);
 
     connect(ui->cmdSend, SIGNAL(clicked()),
+            this, SLOT(slotSendMessage()));
+    connect(ui->msgEdit, SIGNAL(returnPressed()),
             this, SLOT(slotSendMessage()));
     connect(ui->cmdSkip, SIGNAL(clicked()),
             this, SLOT(slotSkip()));

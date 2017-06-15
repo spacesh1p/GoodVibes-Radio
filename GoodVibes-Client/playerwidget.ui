@@ -31,6 +31,11 @@
      </item>
      <item>
       <widget class="QLabel" name="channelName">
+       <property name="font">
+        <font>
+         <pointsize>16</pointsize>
+        </font>
+       </property>
        <property name="text">
         <string>TextLabel</string>
        </property>
@@ -87,7 +92,48 @@
       </spacer>
      </item>
      <item>
-      <widget class="QLCDNumber" name="lcdNumOfGuests"/>
+      <widget class="QLCDNumber" name="lcdNumOfGuests">
+       <property name="palette">
+        <palette>
+         <active>
+          <colorrole role="Light">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>0</red>
+             <green>0</green>
+             <blue>0</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </active>
+         <inactive>
+          <colorrole role="Light">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>0</red>
+             <green>0</green>
+             <blue>0</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </inactive>
+         <disabled>
+          <colorrole role="Light">
+           <brush brushstyle="SolidPattern">
+            <color alpha="255">
+             <red>0</red>
+             <green>0</green>
+             <blue>0</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </disabled>
+        </palette>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

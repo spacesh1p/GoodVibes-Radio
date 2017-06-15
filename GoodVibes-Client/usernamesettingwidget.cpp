@@ -43,6 +43,8 @@ void UserNameSettingWidget::slotConnected() {
                pSender, SLOT(slotConnectToServer()));
     connect(ui->cmdOk, SIGNAL(clicked()),
             this, SLOT(slotOkClicked()));
+    connect(ui->nicknameEdit, SIGNAL(returnPressed()),
+            this, SLOT(slotOkClicked()));
 }
 
 void UserNameSettingWidget::slotOkClicked() {

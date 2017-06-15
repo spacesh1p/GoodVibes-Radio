@@ -3,7 +3,6 @@
 #include <QCommandLinkButton>
 #include <QTime>
 #include <QToolButton>
-#include <QtDebug>
 #include "mediahandler.h"
 #include "socketthread.h"
 #include "channelwidget.h"
