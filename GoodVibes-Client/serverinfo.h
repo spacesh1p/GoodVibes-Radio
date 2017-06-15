@@ -3,8 +3,8 @@
 #include <QString>
 
 namespace ServerInfo {
-const QString strHost = "192.168.10.103";
-const int nPort = 2323;
+const QString strHost = "88.198.246.118";
+const int nPort = 2025;
 }
 
 #endif // SERVERINFO_H
