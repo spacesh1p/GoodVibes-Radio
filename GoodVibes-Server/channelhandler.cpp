@@ -121,7 +121,7 @@ void ChannelHandler::slotMediaDataReady(QByteArray data) {
         emit sendNextSong(arr);
     }
     else if (identifier[0] == "skip") {
-        emit sendSkip("<skip>");
+        emit sendSkip(description);
     }
     else if (identifier[0] == "msg") {
         emit sendMessage(description + ",<time:" + QTime::currentTime().toString("hh:mm:ss") + ">");

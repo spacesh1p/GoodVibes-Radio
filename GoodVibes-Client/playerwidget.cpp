@@ -167,7 +167,10 @@ void PlayerWidget::slotDataReady(QByteArray data) {
             }
         }
         else if (identifier[0] == "skip") {
-            setNextSong();
+            if (!positionQueue.isEmpty()) {
+                positionQueue.first() = quint64(QTime::fromString(identifier[1], "hh.mm.ss.zzz").msecsTo(QTime::currentTime()));
+                setNextSong();
+            }
         }
         else if (identifier[0] == "msg") {
             QStringList senderInfo = (descriptList[1].split(QRegExp("(<|>|:)"), QString::SkipEmptyParts));

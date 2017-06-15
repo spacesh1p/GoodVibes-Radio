@@ -291,7 +291,7 @@ void ChannelWidget::slotSeekable(bool state) {
 
 void ChannelWidget::slotSkip() {
     if (pMediaHandler->getPlayListSize() != 0) {
-        emit sendString("<skip>");
+        emit sendString("<skip:" + QTime::currentTime().toString("hh.mm.ss.zzz") + ">");
         pMediaPlayer->setPosition(pMediaPlayer->duration());
     }
 }
