@@ -91,8 +91,10 @@ void ChannelHandler::slotMediaDataReady(QByteArray data) {
     }
 
     else if (identifier[0] == "endOfMedia") {
-        songsQueue.dequeue();
-        startTime.dequeue();
+        if (!songsQueue.isEmpty()) {
+            songsQueue.dequeue();
+            startTime.dequeue();
+        }
     }
 
     else if (identifier[0] == "song") {
@@ -102,7 +104,8 @@ void ChannelHandler::slotMediaDataReady(QByteArray data) {
         out1 << quint64(0);
         arr.append(data);
         songsQueue.enqueue(arr);
-        startTime.enqueue(QString());
+        if (startTime.size() == songsQueue.size() - 1)
+            startTime.enqueue(QString());
         QByteArray addition;
         QDataStream out2(&addition, QIODevice::WriteOnly);
         out2.setVersion(QDataStream::Qt_5_3);

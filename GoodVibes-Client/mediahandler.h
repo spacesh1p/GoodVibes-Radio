@@ -29,6 +29,7 @@ public:
     ~MediaHandler();
     void addSong(const QString& path);
     QMediaPlayer* getMediaPlayer();
+    int getPlayListSize();
 
 signals:
     void songAdded(int number);

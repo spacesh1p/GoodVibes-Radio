@@ -124,7 +124,7 @@ void MediaHandler::slotSendNextSong(QMediaPlayer::MediaStatus status) {
 }
 
 void MediaHandler::slotError() {
-    pMediaPlayer->setMedia(QMediaContent());
+    pMediaPlayer->setMedia(QMediaContent(), nullptr);
     filesQueue.clear();
     for (auto it = playList.begin(); it != playList.end(); ++it) {
         pChannelWidget->removeSongButton(it->second);
@@ -135,4 +135,8 @@ void MediaHandler::slotError() {
 
 QMediaPlayer* MediaHandler::getMediaPlayer() {
     return pMediaPlayer;
+}
+
+int MediaHandler::getPlayListSize() {
+    return playList.size();
 }

@@ -290,8 +290,10 @@ void ChannelWidget::slotSeekable(bool state) {
 }
 
 void ChannelWidget::slotSkip() {
-    emit sendString("<skip>");
-    pMediaPlayer->setPosition(pMediaPlayer->duration());
+    if (pMediaHandler->getPlayListSize() != 0) {
+        emit sendString("<skip>");
+        pMediaPlayer->setPosition(pMediaPlayer->duration());
+    }
 }
 
 void ChannelWidget::slotSendMessage() {
