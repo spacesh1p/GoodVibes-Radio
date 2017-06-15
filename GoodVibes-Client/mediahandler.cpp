@@ -73,11 +73,12 @@ void MediaHandler::addSong(const QString& path) {
 void MediaHandler::slotSongAdded(int number) {
     if (number <= 3) {
         QString path = filesQueue.dequeue();
-        emit readyToSendFile(getFileName(path), path);
         if (number == 1) {
+            emit sendString("<startMedia:" + QTime::currentTime().toString("hh.mm.ss.zzz") + ">");
             pMediaPlayer->setMedia(QUrl::fromLocalFile(playList.head().first));
             playList.head().second->setChecked(true);
         }
+        emit readyToSendFile(getFileName(path), path);
     }
     else {
         disconnect(this, SIGNAL(songAdded(int)),
@@ -91,7 +92,8 @@ void MediaHandler::slotSongAdded(int number) {
 void MediaHandler::slotMediaStatusChanged(QMediaPlayer::MediaStatus status) {
     if (status == QMediaPlayer::MediaStatus::LoadedMedia) {
         pMediaPlayer->play();
-        emit sendString("<startMedia:" + QTime::currentTime().toString("hh.mm.ss.zzz") + ">");
+        if (playList.size() > 1)
+            emit sendString("<startMedia:" + QTime::currentTime().toString("hh.mm.ss.zzz") + ">");
         pMediaPlayer->setVolume(pChannelWidget->getSliderValue());
     }
 

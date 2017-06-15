@@ -197,6 +197,8 @@ void PlayerWidget::setNextSong() {
         ui->songNameLine->setText("");
         pMediaPlayer->stop();
         pMediaPlayer->setMedia(QMediaContent(), nullptr);
+        if (buffer.isOpen())
+            buffer.close();
         firstSong = true;
     }
 }
@@ -207,6 +209,8 @@ void PlayerWidget::slotBackClicked() {
     positionQueue.clear();
     pMediaPlayer->stop();
     pMediaPlayer->setMedia(QMediaContent(), nullptr);
+    if (buffer.isOpen())
+        buffer.close();
     pChooseChannelWidget->backToChooseChannel();
 }
 
@@ -216,6 +220,8 @@ void PlayerWidget::slotDisconnectFromChannel() {
     positionQueue.clear();
     pMediaPlayer->stop();
     pMediaPlayer->setMedia(QMediaContent(), nullptr);
+    if (buffer.isOpen())
+        buffer.close();
     emit disconnectFromServer();
     pChooseChannelWidget->backToChooseChannel();
 }

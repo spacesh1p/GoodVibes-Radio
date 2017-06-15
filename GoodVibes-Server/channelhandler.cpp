@@ -84,7 +84,10 @@ void ChannelHandler::slotMediaDataReady(QByteArray data) {
     in >> description;
     QStringList identifier = (description.split(QRegExp("(<|>|:)"), QString::SkipEmptyParts));
     if (identifier[0] == "startMedia") {
-        startTime.first() = identifier[1];
+        if (startTime.isEmpty())
+            startTime.enqueue(identifier[1]);
+        else
+            startTime.first() = identifier[1];
     }
 
     else if (identifier[0] == "endOfMedia") {
