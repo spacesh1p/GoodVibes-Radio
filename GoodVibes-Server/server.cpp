@@ -27,7 +27,7 @@ void Server::start() {
             return;
         }
     else
-        qDebug() << "Server launched.";
+        qDebug() << "Server launched at port:" << port;
 }
 
 void Server::slotReadDescription(QByteArray data) {

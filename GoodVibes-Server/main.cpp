@@ -4,15 +4,8 @@
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
-    QString port(argv[1]);
-    if (!port.isEmpty()) {
-        Server server(port.toInt());
-        server.start();
-    }
-    else {
-        qDebug() << "You didn't enter the port number.";
-        exit(1);
-    }
+    Server server(2025);
+    server.start();
 
     return a.exec();
 }

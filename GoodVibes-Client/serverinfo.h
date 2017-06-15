@@ -3,7 +3,7 @@
 #include <QString>
 
 namespace ServerInfo {
-const QString strHost = "localhost";
+const QString strHost = "192.168.10.103";
 const int nPort = 2323;
 }
 
