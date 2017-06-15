@@ -3,7 +3,7 @@ QT -= gui
 
 CONFIG += c++11
 
-TARGET = GoodVibes-Server
+TARGET = GV-Server
 CONFIG += console
 CONFIG -= app_bundle
 
