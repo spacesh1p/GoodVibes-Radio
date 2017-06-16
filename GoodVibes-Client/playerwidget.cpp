@@ -119,6 +119,8 @@ void PlayerWidget::slotDisconnected() {
 
 void PlayerWidget::slotError(const QString &strError) {
     ui->cmdSend->setEnabled(false);
+    pMediaPlayer->stop();
+    pMediaPlayer->setMedia(QMediaContent(), nullptr);
     if (buffer.isOpen())
         buffer.close();
     ui->songNameLine->setText("");
